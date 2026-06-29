@@ -1,0 +1,17 @@
+﻿using Microsoft.EntityFrameworkCore;
+using IMS.Web.Models;
+
+namespace IMS.Web.Data
+{
+    public class ApplicationDbContext : DbContext
+    {
+        public ApplicationDbContext(
+            DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+        }
+
+        public DbSet<Intern> Interns { get; set; }
+        public DbSet<Department> Departments { get; set; }
+    }
+}

@@ -1,0 +1,115 @@
+﻿@model IEnumerable<IMS.Web.Models.Intern>
+
+<div class="container mt-5">
+    @if (TempData["Success"] != null)
+    {
+        <div id="successAlert" class="alert alert-success alert-dismissible fade show">
+
+            @TempData["Success"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+    <script>
+
+            setTimeout(function () {
+
+                let alert = document.getElementById("successAlert");
+
+                if (alert) {
+                    alert.style.display = "none";
+                }
+
+            }, 3000);
+
+    </script>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Intern Management System</h2>
+
+        <a asp-action="Create" class="btn btn-primary">
+            + Add Intern
+        </a>
+    </div>
+    <form method="get" class="mb-3">
+
+        <div class="input-group">
+
+            <input type="text"
+                   name="search"
+                   value="@ViewBag.Search"
+                   class="form-control"
+                   placeholder="Search by name or email..." />
+
+            <button class="btn btn-primary">
+                Search
+            </button>
+
+        </div>
+
+    </form>
+
+    @if (Model.Any())
+    {
+        <table class="table table-bordered table-hover table-striped shadow">
+
+            <thead class="table-dark">
+
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Department</th>
+                    <th width="180">Actions</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach (var intern in Model)
+                {
+                    <tr>
+                        <td>@intern.Id</td>
+                        <td>@intern.Name</td>
+                        <td>@intern.Email</td>
+                        <td>@intern.Department?.Name</td>
+
+                        
+
+
+                        <td>
+
+                            <a asp-action="Edit"
+                               asp-route-id="@intern.Id"
+                               class="btn btn-warning btn-sm">
+                                Edit
+                            </a>
+
+                            <a asp-action="Delete"
+                               asp-route-id="@intern.Id"
+                               class="btn btn-danger btn-sm">
+                                Delete
+                            </a>
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+    }
+    else
+    {
+        <div class="alert alert-warning text-center">
+            🔍 No interns found.
+        </div>
+    }
+
+</div>
