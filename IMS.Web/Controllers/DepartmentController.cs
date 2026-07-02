@@ -1,9 +1,11 @@
 ﻿using IMS.Web.Data;
 using IMS.Web.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IMS.Web.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class DepartmentController : Controller
     {
         private readonly ApplicationDbContext _context;

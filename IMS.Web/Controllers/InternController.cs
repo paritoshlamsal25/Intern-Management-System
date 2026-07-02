@@ -2,9 +2,11 @@
 using IMS.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IMS.Web.Controllers
 {
+    [Authorize]
     public class InternController : Controller
     {
         private readonly ApplicationDbContext _context;

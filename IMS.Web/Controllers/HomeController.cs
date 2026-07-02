@@ -1,6 +1,7 @@
 using IMS.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IMS.Web.Controllers
 {
