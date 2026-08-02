@@ -67,7 +67,7 @@ namespace IMS.Web.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal);
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Dashboard");
         }
         [Authorize]
         public async Task<IActionResult> Logout()

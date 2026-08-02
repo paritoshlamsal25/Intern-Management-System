@@ -1,40 +1,42 @@
-﻿@model IEnumerable<IMS.Web.Models.Intern>
+﻿@model IEnumerable<IMS.Web.Models.Mentor>
+@if (TempData["Success"] != null)
+{
+    <div id="successAlert" class="alert alert-success alert-dismissible fade show">
 
-<div class="container mt-5">
-    @if (TempData["Success"] != null)
-    {
-        <div id="successAlert" class="alert alert-success alert-dismissible fade show">
+        @TempData["Success"]
 
-            @TempData["Success"]
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+        </button>
 
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert">
-            </button>
+    </div>
+}
 
-        </div>
-    }
-    <script>
+<script>
 
-            setTimeout(function () {
+    setTimeout(function () {
 
-                let alert = document.getElementById("successAlert");
+        let alert = document.getElementById("successAlert");
 
-                if (alert) {
-                    alert.style.display = "none";
-                }
+        if (alert) {
+            alert.style.display = "none";
+        }
 
-            }, 3000);
+    }, 3000);
 
-    </script>
+</script>
+
+<div class="container mt-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Intern Management System</h2>
+        <h2>Mentor Management</h2>
 
         <a asp-action="Create" class="btn btn-primary">
-            + Add Intern
+            + Create Mentor
         </a>
     </div>
+
     <form method="get" class="mb-3">
 
         <div class="input-group">
@@ -61,10 +63,9 @@
 
                 <tr>
                     <th>Id</th>
-                    <th>Name</th>
+                    <th>Full Name</th>
                     <th>Email</th>
-                    <th>Department</th>
-                    <th>Mentor</th>
+                    <th>Phone</th>
                     <th width="180">Actions</th>
                 </tr>
 
@@ -72,29 +73,25 @@
 
             <tbody>
 
-                @foreach (var intern in Model)
+                @foreach (var mentor in Model)
                 {
                     <tr>
-                        <td>@intern.Id</td>
-                        <td>@intern.Name</td>
-                        <td>@intern.Email</td>
-                        <td>@intern.Department?.Name</td>
-                        <td>@intern.Mentor?.FullName</td>
 
-
-                        
-
+                        <td>@mentor.Id</td>
+                        <td>@mentor.FullName</td>
+                        <td>@mentor.Email</td>
+                        <td>@mentor.PhoneNumber</td>
 
                         <td>
 
                             <a asp-action="Edit"
-                               asp-route-id="@intern.Id"
+                               asp-route-id="@mentor.Id"
                                class="btn btn-warning btn-sm">
                                 Edit
                             </a>
 
                             <a asp-action="Delete"
-                               asp-route-id="@intern.Id"
+                               asp-route-id="@mentor.Id"
                                class="btn btn-danger btn-sm">
                                 Delete
                             </a>
@@ -111,7 +108,7 @@
     else
     {
         <div class="alert alert-warning text-center">
-            🔍 No interns found.
+            No mentors found.
         </div>
     }
 

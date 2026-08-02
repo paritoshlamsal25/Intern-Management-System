@@ -20,6 +20,7 @@ namespace IMS.Web.Controllers
         {
             var interns = _context.Interns
                         .Include(x => x.Department)
+                        .Include(x => x.Mentor)
                         .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
@@ -38,6 +39,7 @@ namespace IMS.Web.Controllers
         public IActionResult Create()
         {
             ViewBag.Departments = _context.Departments.ToList();
+            ViewBag.Mentors = _context.Mentors.ToList();
 
             return View();
         }
@@ -77,6 +79,7 @@ namespace IMS.Web.Controllers
             }
 
             ViewBag.Departments = _context.Departments.ToList();
+            ViewBag.Mentors = _context.Mentors.ToList();
 
             return View(intern);
         }

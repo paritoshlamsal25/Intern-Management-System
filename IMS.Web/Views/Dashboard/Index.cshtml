@@ -1,0 +1,94 @@
+﻿@model IEnumerable<IMS.Web.Models.Intern>
+<div class="container mt-5">
+
+    <h2 class="mb-4">
+        Welcome, @User.Identity?.Name 👋
+    </h2>
+
+    <p class="mb-4">
+        Logged in as
+        <strong>@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</strong>
+    </p>
+
+    <div class="row">
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <h5>Total Interns</h5>
+                    <h2>@ViewBag.TotalInterns</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body">
+                    <h5>Total Departments</h5>
+                    <h2>@ViewBag.TotalDepartments</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-warning text-dark shadow">
+                <div class="card-body">
+                    <h5>Total Users</h5>
+                    <h2>@ViewBag.TotalUsers</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="card shadow mt-4">
+
+        <div class="card-header bg-dark text-white">
+            <h4>Recent Interns</h4>
+        </div>
+
+        <div class="card-body">
+
+           
+            @if (Model.Any())
+            {
+                <table class="table table-striped table-hover">
+
+                    <thead>
+
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Department</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var intern in Model)
+                        {
+                            <tr>
+
+                                <td>@intern.Name</td>
+
+                                <td>@intern.Email</td>
+
+                                <td>@intern.Department?.Name</td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+            }
+            else
+            {
+                <p>No interns found.</p>
+            }
+
+        </div>
+
+    </div>
+
+</div>
