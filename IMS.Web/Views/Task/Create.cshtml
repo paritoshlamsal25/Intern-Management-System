@@ -1,0 +1,120 @@
+﻿@model IMS.Web.Models.TaskItem
+
+<div class="container mt-5">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+            <h3>Create New Task</h3>
+        </div>
+
+        <div class="card-body">
+
+            <form method="post">
+
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label"></label>
+
+                    <input asp-for="Title"
+                           class="form-control"
+                           placeholder="Enter task title" />
+
+                    <span asp-validation-for="Title"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description"
+                           class="form-label"></label>
+
+                    <textarea asp-for="Description"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Enter task description"></textarea>
+
+                    <span asp-validation-for="Description"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="DueDate"
+                           class="form-label"></label>
+
+                    <input asp-for="DueDate"
+                           type="date"
+                           class="form-control" />
+
+                    <span asp-validation-for="DueDate"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+
+                    <label asp-for="Status"
+                           class="form-label"></label>
+
+                    <select asp-for="Status"
+                            class="form-select">
+
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+
+                    </select>
+
+                    <span asp-validation-for="Status"
+                          class="text-danger"></span>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label asp-for="InternId"
+                           class="form-label">
+                        Assign Intern
+                    </label>
+
+                    <select asp-for="InternId"
+                            class="form-select">
+
+                        <option value="">
+                            -- Select Intern --
+                        </option>
+
+                        @foreach (var intern in ViewBag.Interns)
+                        {
+                            <option value="@intern.Id">
+                                @intern.Name
+                            </option>
+                        }
+
+                    </select>
+
+                    <span asp-validation-for="InternId"
+                          class="text-danger"></span>
+
+                </div>
+
+                <button type="submit"
+                        class="btn btn-success">
+                    Save
+                </button>
+
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+                    Back
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

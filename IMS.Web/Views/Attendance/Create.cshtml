@@ -1,0 +1,106 @@
+﻿@model IMS.Web.Models.Attendance
+
+<div class="container mt-5">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+            <h3>Mark Attendance</h3>
+        </div>
+
+        <div class="card-body">
+
+            <form method="post">
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3">
+                </div>
+
+                <div class="mb-3">
+
+                    <label asp-for="InternId"
+                           class="form-label">
+                        Intern
+                    </label>
+
+                    <select asp-for="InternId"
+                            class="form-select">
+
+                        <option value="">
+                            -- Select Intern --
+                        </option>
+
+                        @foreach (var intern in ViewBag.Interns)
+                        {
+                            <option value="@intern.Id">
+                                @intern.Name
+                            </option>
+                        }
+
+                    </select>
+
+                    <span asp-validation-for="InternId"
+                          class="text-danger"></span>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label asp-for="Date"
+                           class="form-label">
+                        Date
+                    </label>
+
+                    <input asp-for="Date"
+                           type="date"
+                           class="form-control" />
+
+                    <span asp-validation-for="Date"
+                          class="text-danger"></span>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label asp-for="Status"
+                           class="form-label">
+                        Status
+                    </label>
+
+                    <select asp-for="Status"
+                            class="form-select">
+
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                        <option value="Late">Late</option>
+
+                    </select>
+
+                    <span asp-validation-for="Status"
+                          class="text-danger"></span>
+
+                </div>
+
+                <button type="submit"
+                        class="btn btn-success">
+                    Save
+                </button>
+
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+                    Back
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

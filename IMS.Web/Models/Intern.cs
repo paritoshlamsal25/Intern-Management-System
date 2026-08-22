@@ -15,5 +15,10 @@ namespace IMS.Web.Models
         public int? MentorId { get; set; }
 
         public Mentor? Mentor { get; set; }
+        public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
+        public ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
+        public ICollection<LeaveRequest> LeaveRequests { get; set; } = new List<LeaveRequest>();
+
+
     }
 }

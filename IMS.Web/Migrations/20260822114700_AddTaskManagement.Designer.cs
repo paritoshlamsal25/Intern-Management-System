@@ -4,6 +4,7 @@ using IMS.Web.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IMS.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260822114700_AddTaskManagement")]
+    partial class AddTaskManagement
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,31 +24,6 @@ namespace IMS.Web.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("IMS.Web.Models.Attendance", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("InternId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InternId");
-
-                    b.ToTable("Attendances");
-                });
 
             modelBuilder.Entity("IMS.Web.Models.Department", b =>
                 {
@@ -93,38 +71,6 @@ namespace IMS.Web.Migrations
                     b.HasIndex("MentorId");
 
                     b.ToTable("Interns");
-                });
-
-            modelBuilder.Entity("IMS.Web.Models.LeaveRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("InternId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InternId");
-
-                    b.ToTable("LeaveRequests");
                 });
 
             modelBuilder.Entity("IMS.Web.Models.Mentor", b =>
@@ -212,17 +158,6 @@ namespace IMS.Web.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("IMS.Web.Models.Attendance", b =>
-                {
-                    b.HasOne("IMS.Web.Models.Intern", "Intern")
-                        .WithMany("Attendances")
-                        .HasForeignKey("InternId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Intern");
-                });
-
             modelBuilder.Entity("IMS.Web.Models.Intern", b =>
                 {
                     b.HasOne("IMS.Web.Models.Department", "Department")
@@ -238,17 +173,6 @@ namespace IMS.Web.Migrations
                     b.Navigation("Mentor");
                 });
 
-            modelBuilder.Entity("IMS.Web.Models.LeaveRequest", b =>
-                {
-                    b.HasOne("IMS.Web.Models.Intern", "Intern")
-                        .WithMany("LeaveRequests")
-                        .HasForeignKey("InternId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Intern");
-                });
-
             modelBuilder.Entity("IMS.Web.Models.TaskItem", b =>
                 {
                     b.HasOne("IMS.Web.Models.Intern", "Intern")
@@ -262,10 +186,6 @@ namespace IMS.Web.Migrations
 
             modelBuilder.Entity("IMS.Web.Models.Intern", b =>
                 {
-                    b.Navigation("Attendances");
-
-                    b.Navigation("LeaveRequests");
-
                     b.Navigation("Tasks");
                 });
 

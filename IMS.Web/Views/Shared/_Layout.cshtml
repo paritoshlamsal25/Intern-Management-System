@@ -72,24 +72,38 @@
                     </li>
 
                     <li class="nav-item mb-2">
-                        <a href="#" class="nav-link text-white">
+                        <a asp-controller="Task"
+                           asp-action="Index"
+                           class="nav-link text-white @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Task" ? "bg-primary rounded" : "")">
+
                             <i class="bi bi-list-check me-2"></i>
                             Tasks
+
                         </a>
                     </li>
 
                     <li class="nav-item mb-2">
-                        <a href="#" class="nav-link text-white">
+                        <a asp-controller="Attendance"
+                           asp-action="Index"
+                           class="nav-link text-white @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Attendance" ? "bg-primary rounded" : "")">
+
                             <i class="bi bi-calendar-check me-2"></i>
                             Attendance
+
                         </a>
                     </li>
 
                     <li class="nav-item mb-2">
-                        <a href="#" class="nav-link text-white">
-                            <i class="bi bi-airplane me-2"></i>
+
+                        <a asp-controller="Leave"
+                           asp-action="Index"
+                           class="nav-link text-white @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Leave" ? "bg-primary rounded" : "")">
+
+                            <i class="bi bi-calendar2-minus me-2"></i>
                             Leave
+
                         </a>
+
                     </li>
 
                     <li class="nav-item mb-2">

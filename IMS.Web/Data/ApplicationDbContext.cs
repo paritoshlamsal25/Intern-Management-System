@@ -16,5 +16,8 @@ namespace IMS.Web.Data
         public DbSet<User> Users { get; set; }
 
         public DbSet<Mentor> Mentors { get; set; }
+        public DbSet<TaskItem> TaskItems { get; set; }
+        public DbSet<Attendance> Attendances { get; set; }
+        public DbSet<LeaveRequest> LeaveRequests { get; set; }
     }
 }
