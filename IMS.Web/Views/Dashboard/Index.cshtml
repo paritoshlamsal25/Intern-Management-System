@@ -1,14 +1,39 @@
 ﻿@model IEnumerable<IMS.Web.Models.Intern>
+
 <div class="container mt-5">
 
+    @* Success Message *@
+    @if (TempData["Success"] != null)
+    {
+        <div id="successAlert"
+             class="alert alert-success alert-dismissible fade show">
+
+            @TempData["Success"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+    @* Welcome Section *@
     <h2 class="mb-4">
         Welcome, @User.Identity?.Name 👋
     </h2>
 
     <p class="mb-4">
         Logged in as
-        <strong>@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</strong>
+        <strong>
+            @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+        </strong>
     </p>
+
+
+    @* =========================
+       BASIC STATISTICS
+       ========================= *@
 
     <div class="row">
 
@@ -38,43 +63,103 @@
                 </div>
             </div>
         </div>
-        <div class="row">
 
-            <div class="col-md-4 mb-3">
-                <div class="card bg-info text-white shadow">
-                    <div class="card-body">
-                        <h5>Total Tasks</h5>
-                        <h2>@ViewBag.TotalTasks</h2>
-                    </div>
+    </div>
+
+
+    @* =========================
+       TASK STATISTICS
+       ========================= *@
+
+    <div class="row">
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-info text-white shadow">
+                <div class="card-body">
+                    <h5>Total Tasks</h5>
+                    <h2>@ViewBag.TotalTasks</h2>
                 </div>
             </div>
+        </div>
 
-            <div class="col-md-4 mb-3">
-                <div class="card bg-warning text-dark shadow">
-                    <div class="card-body">
-                        <h5>Pending Tasks</h5>
-                        <h2>@ViewBag.PendingTasks</h2>
-                    </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-warning text-dark shadow">
+                <div class="card-body">
+                    <h5>Pending Tasks</h5>
+                    <h2>@ViewBag.PendingTasks</h2>
                 </div>
             </div>
+        </div>
 
-            <div class="col-md-4 mb-3">
-                <div class="card bg-success text-white shadow">
-                    <div class="card-body">
-                        <h5>Completed Tasks</h5>
-                        <h2>@ViewBag.CompletedTasks</h2>
-                    </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body">
+                    <h5>Completed Tasks</h5>
+                    <h2>@ViewBag.CompletedTasks</h2>
                 </div>
             </div>
+        </div>
 
+    </div>
+
+
+    @* =========================
+       ATTENDANCE STATISTICS
+       ========================= *@
+
+    <div class="row mt-2">
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white shadow">
+                <div class="card-body">
+                    <h5>Total Attendance</h5>
+                    <h2>@ViewBag.TotalAttendance</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body">
+                    <h5>Present</h5>
+                    <h2>@ViewBag.PresentCount</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-danger text-white shadow">
+                <div class="card-body">
+                    <h5>Absent</h5>
+                    <h2>@ViewBag.AbsentCount</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark shadow">
+                <div class="card-body">
+                    <h5>Late</h5>
+                    <h2>@ViewBag.LateCount</h2>
+                </div>
+            </div>
         </div>
         <div class="row mt-2">
 
             <div class="col-md-3 mb-3">
-                <div class="card bg-info text-white shadow">
+                <div class="card bg-primary text-white shadow">
                     <div class="card-body">
-                        <h5>Total Attendance</h5>
-                        <h2>@ViewBag.TotalAttendance</h2>
+                        <h5>Total Leaves</h5>
+                        <h2>@ViewBag.TotalLeaves</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="card bg-warning text-dark shadow">
+                    <div class="card-body">
+                        <h5>Pending</h5>
+                        <h2>@ViewBag.PendingLeavesCount</h2>
                     </div>
                 </div>
             </div>
@@ -82,8 +167,8 @@
             <div class="col-md-3 mb-3">
                 <div class="card bg-success text-white shadow">
                     <div class="card-body">
-                        <h5>Present</h5>
-                        <h2>@ViewBag.PresentCount</h2>
+                        <h5>Approved</h5>
+                        <h2>@ViewBag.ApprovedLeaves</h2>
                     </div>
                 </div>
             </div>
@@ -91,17 +176,8 @@
             <div class="col-md-3 mb-3">
                 <div class="card bg-danger text-white shadow">
                     <div class="card-body">
-                        <h5>Absent</h5>
-                        <h2>@ViewBag.AbsentCount</h2>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3 mb-3">
-                <div class="card bg-warning text-dark shadow">
-                    <div class="card-body">
-                        <h5>Late</h5>
-                        <h2>@ViewBag.LateCount</h2>
+                        <h5>Rejected</h5>
+                        <h2>@ViewBag.RejectedLeaves</h2>
                     </div>
                 </div>
             </div>
@@ -109,51 +185,174 @@
         </div>
 
     </div>
+
+
+    @* =========================
+       RECENT INTERNS
+       ========================= *@
+
     <div class="card shadow mt-4">
 
         <div class="card-header bg-dark text-white">
-            <h4>Recent Interns</h4>
+            <h4 class="mb-0">Recent Interns</h4>
         </div>
 
         <div class="card-body">
 
-           
             @if (Model.Any())
             {
-                <table class="table table-striped table-hover">
+                <div class="table-responsive">
 
-                    <thead>
+                    <table class="table table-striped table-hover">
 
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Department</th>
-                        </tr>
+                        <thead>
 
-                    </thead>
-
-                    <tbody>
-
-                        @foreach (var intern in Model)
-                        {
                             <tr>
-
-                                <td>@intern.Name</td>
-
-                                <td>@intern.Email</td>
-
-                                <td>@intern.Department?.Name</td>
-
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
                             </tr>
-                        }
 
-                    </tbody>
+                        </thead>
 
-                </table>
+                        <tbody>
+
+                            @foreach (var intern in Model)
+                            {
+                                <tr>
+
+                                    <td>@intern.Name</td>
+
+                                    <td>@intern.Email</td>
+
+                                    <td>@intern.Department?.Name</td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
             }
             else
             {
-                <p>No interns found.</p>
+                <p class="mb-0">No interns found.</p>
+            }
+
+        </div>
+
+    </div>
+
+
+    @* =========================
+       PENDING LEAVE REQUESTS
+       ========================= *@
+
+    <div class="card shadow mt-4">
+
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+
+            <h4 class="mb-0">
+                Pending Leave Requests
+            </h4>
+
+            <a asp-controller="Leave"
+               asp-action="Index"
+               class="btn btn-light btn-sm">
+                View All
+            </a>
+
+        </div>
+
+        <div class="card-body">
+
+            @if (ViewBag.PendingLeaves != null &&
+                 ViewBag.PendingLeaves.Count > 0)
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead>
+
+                            <tr>
+                                <th>Intern</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Reason</th>
+                                <th>Actions</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var leave in ViewBag.PendingLeaves)
+                            {
+                                <tr>
+
+                                    <td>
+                                        @leave.Intern?.Name
+                                    </td>
+
+                                    <td>
+                                        @leave.StartDate.ToString("yyyy-MM-dd")
+                                    </td>
+
+                                    <td>
+                                        @leave.EndDate.ToString("yyyy-MM-dd")
+                                    </td>
+
+                                    <td>
+                                        @leave.Reason
+                                    </td>
+
+                                    <td>
+
+                                        <form asp-controller="Leave"
+                                              asp-action="Approve"
+                                              asp-route-id="@leave.Id"
+                                              method="post"
+                                              class="d-inline">
+
+                                            <button type="submit"
+                                                    class="btn btn-success btn-sm">
+                                                Approve
+                                            </button>
+
+                                        </form>
+
+                                        <form asp-controller="Leave"
+                                              asp-action="Reject"
+                                              asp-route-id="@leave.Id"
+                                              method="post"
+                                              class="d-inline">
+
+                                            <button type="submit"
+                                                    class="btn btn-danger btn-sm">
+                                                Reject
+                                            </button>
+
+                                        </form>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-success mb-0">
+                    No pending leave requests. 🎉
+                </div>
             }
 
         </div>
@@ -161,3 +360,20 @@
     </div>
 
 </div>
+
+
+@* Hide success message after 3 seconds *@
+
+<script>
+
+    setTimeout(function () {
+
+        let alert = document.getElementById("successAlert");
+
+        if (alert) {
+            alert.style.display = "none";
+        }
+
+    }, 3000);
+
+</script>

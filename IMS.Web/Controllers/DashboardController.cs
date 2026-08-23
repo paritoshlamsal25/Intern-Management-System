@@ -37,6 +37,22 @@ namespace IMS.Web.Controllers
 
             ViewBag.LateCount = _context.Attendances
                 .Count(x => x.Status == "Late");
+            ViewBag.PendingLeaves = _context.LeaveRequests
+    .Include(x => x.Intern)
+    .Where(x => x.Status == "Pending")
+    .OrderByDescending(x => x.Id)
+    .Take(5)
+    .ToList();
+            ViewBag.TotalLeaves = _context.LeaveRequests.Count();
+
+            ViewBag.PendingLeavesCount = _context.LeaveRequests
+                .Count(x => x.Status == "Pending");
+
+            ViewBag.ApprovedLeaves = _context.LeaveRequests
+                .Count(x => x.Status == "Approved");
+
+            ViewBag.RejectedLeaves = _context.LeaveRequests
+                .Count(x => x.Status == "Rejected");
 
             var recentInterns = _context.Interns
                 .Include(x => x.Department)
