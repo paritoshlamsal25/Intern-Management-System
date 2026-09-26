@@ -1,40 +1,49 @@
 ﻿@model IMS.Web.Models.Mentor
 
+@{
+    ViewData["Title"] = "Delete Mentor";
+}
+
 <div class="container mt-5">
-
-    <div class="card shadow">
-
+    <div class="card shadow border-0">
         <div class="card-header bg-danger text-white">
-            <h3>Delete Mentor</h3>
+            <h3 class="mb-0">Delete Mentor</h3>
         </div>
 
         <div class="card-body">
+            <div class="alert alert-warning border-0 shadow-sm mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Warning:</strong> Are you sure you want to delete mentor <strong>@Model.FullName</strong>? This action cannot be undone.
+            </div>
 
-            <h5>Are you sure you want to delete this mentor?</h5>
+            <div class="card bg-light border-0 mb-4">
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3 text-muted">Full Name</dt>
+                        <dd class="col-sm-9 fw-bold">@Model.FullName</dd>
 
-            <hr />
+                        <dt class="col-sm-3 text-muted">Email</dt>
+                        <dd class="col-sm-9">@Model.Email</dd>
 
-            <p><strong>Name:</strong> @Model.FullName</p>
-            <p><strong>Email:</strong> @Model.Email</p>
-            <p><strong>Phone:</strong> @Model.PhoneNumber</p>
+                        <dt class="col-sm-3 text-muted">Phone Number</dt>
+                        <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.PhoneNumber) ? "-" : Model.PhoneNumber)</dd>
+                    </dl>
+                </div>
+            </div>
 
-            <form method="post">
-
+            <form asp-action="Delete" method="post">
+                @Html.AntiForgeryToken()
                 <input asp-for="Id" type="hidden" />
 
-                <button class="btn btn-danger">
-                    Delete
-                </button>
-
-                <a asp-action="Index"
-                   class="btn btn-secondary">
-                    Cancel
-                </a>
-
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger shadow-sm">
+                        <i class="bi bi-trash-fill me-1"></i> Confirm Delete
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary shadow-sm">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </a>
+                </div>
             </form>
-
         </div>
-
     </div>
-
 </div>

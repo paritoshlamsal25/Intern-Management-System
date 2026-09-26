@@ -1,10 +1,12 @@
 ﻿using IMS.Web.Data;
 using IMS.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace IMS.Web.Controllers
 {
+    [Authorize(Roles = "Admin,HR")] // accessible by both Admin and HR roles
     public class MentorController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -14,35 +16,43 @@ namespace IMS.Web.Controllers
             _context = context;
         }
 
-        public IActionResult Index(string search)
+        // GET: Mentors List
+        [HttpGet]
+        public async Task<IActionResult> Index(string search)
         {
-            var mentors = _context.Mentors.AsQueryable();
+            var mentorsQuery = _context.Mentors.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
-                mentors = mentors.Where(x =>
-                    x.FullName.Contains(search) ||
-                    x.Email.Contains(search));
+                mentorsQuery = mentorsQuery.Where(x =>
+                    (x.FullName != null && x.FullName.Contains(search)) ||
+                    (x.Email != null && x.Email.Contains(search)));
             }
 
             ViewBag.Search = search;
 
-            return View(mentors.ToList());
+            var result = await mentorsQuery.ToListAsync();
+            return View(result);
         }
+
+        // GET: Create Mentor
+        [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
 
+        // POST: Create Mentor
         [HttpPost]
-        public IActionResult Create(Mentor mentor)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Mentor mentor)
         {
             if (!ModelState.IsValid)
             {
                 return View(mentor);
             }
 
-            bool emailExists = _context.Mentors.Any(x => x.Email == mentor.Email);
+            bool emailExists = await _context.Mentors.AnyAsync(x => x.Email == mentor.Email);
 
             if (emailExists)
             {
@@ -51,15 +61,18 @@ namespace IMS.Web.Controllers
             }
 
             _context.Mentors.Add(mentor);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             TempData["Success"] = "Mentor created successfully.";
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
-        public IActionResult Edit(int id)
+
+        // GET: Edit Mentor
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
         {
-            var mentor = _context.Mentors.Find(id);
+            var mentor = await _context.Mentors.FindAsync(id);
 
             if (mentor == null)
             {
@@ -69,15 +82,17 @@ namespace IMS.Web.Controllers
             return View(mentor);
         }
 
+        // POST: Edit Mentor
         [HttpPost]
-        public IActionResult Edit(Mentor mentor)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Mentor mentor)
         {
             if (!ModelState.IsValid)
             {
                 return View(mentor);
             }
 
-            bool emailExists = _context.Mentors.Any(x =>
+            bool emailExists = await _context.Mentors.AnyAsync(x =>
                 x.Email == mentor.Email &&
                 x.Id != mentor.Id);
 
@@ -88,15 +103,18 @@ namespace IMS.Web.Controllers
             }
 
             _context.Mentors.Update(mentor);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             TempData["Success"] = "Mentor updated successfully.";
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
-        public IActionResult Delete(int id)
+
+        // GET: Delete Mentor Confirmation
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
         {
-            var mentor = _context.Mentors.Find(id);
+            var mentor = await _context.Mentors.FindAsync(id);
 
             if (mentor == null)
             {
@@ -106,22 +124,32 @@ namespace IMS.Web.Controllers
             return View(mentor);
         }
 
+        // POST: Delete Mentor
         [HttpPost, ActionName("Delete")]
-        public IActionResult DeleteConfirmed(int id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var mentor = _context.Mentors.Find(id);
+            var mentor = await _context.Mentors.FindAsync(id);
 
             if (mentor == null)
             {
                 return NotFound();
             }
 
+            // Prevent deletion if interns are currently assigned to this mentor
+            bool hasAssignedInterns = await _context.Interns.AnyAsync(i => i.MentorId == id);
+            if (hasAssignedInterns)
+            {
+                TempData["Error"] = "Cannot delete this mentor because they are assigned to active interns.";
+                return RedirectToAction(nameof(Index));
+            }
+
             _context.Mentors.Remove(mentor);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             TempData["Success"] = "Mentor deleted successfully.";
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
     }
 }

@@ -1,135 +1,180 @@
-﻿@model IEnumerable<IMS.Web.Models.TaskItem>
+@model IEnumerable<IMS.Web.Models.TaskItem>
+
+@{
+    ViewData["Title"] = "Task Management";
+}
 
 <div class="container mt-4">
 
+    @* System Alert Feedback *@
     @if (TempData["Success"] != null)
     {
-        <div id="successAlert"
-             class="alert alert-success alert-dismissible fade show">
+        <div id="successAlert" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-            @TempData["Success"]
-
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert">
-            </button>
-
+    @if (TempData["Error"] != null)
+    {
+        <div id="errorAlert" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <h2>Task Management</h2>
-
-        <a asp-action="Create" class="btn btn-primary">
-            + Create Task
-        </a>
-
+        <div>
+            <h2 class="fw-bold mb-1">Task Management</h2>
+            <p class="text-muted small mb-0">Track intern assignments, project deliverables, and submissions.</p>
+        </div>
+        @if (User.IsInRole("Admin") || User.IsInRole("HR") || User.IsInRole("Mentor"))
+        {
+            <a asp-action="Create" class="btn btn-primary shadow-sm">
+                <i class="bi bi-plus-lg me-1"></i> Assign New Task
+            </a>
+        }
     </div>
 
-    <form method="get" class="mb-3">
-
-        <div class="input-group">
-
+    @* Search Form *@
+    <form method="get" class="mb-4">
+        <div class="input-group shadow-sm">
             <input type="text"
                    name="search"
                    value="@ViewBag.Search"
                    class="form-control"
-                   placeholder="Search by task or intern..." />
-
-            <button class="btn btn-primary">
-                Search
+                   placeholder="Search by task title, description, or intern name..." />
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search me-1"></i> Search
             </button>
-
+            @if (!string.IsNullOrEmpty(ViewBag.Search as string))
+            {
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    Clear
+                </a>
+            }
         </div>
-
     </form>
 
-    @if (Model.Any())
-    {
-        <table class="table table-bordered table-hover table-striped shadow">
-
-            <thead class="table-dark">
-
-                <tr>
-                    <th>Title</th>
-                    <th>Intern</th>
-                    <th>Due Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                @foreach (var task in Model)
-                {
-                    <tr>
-
-                        <td>@task.Title</td>
-
-                        <td>@task.Intern?.Name</td>
-
-                        <td>@task.DueDate.ToString("yyyy-MM-dd")</td>
-
-                        <td>
-                            @if (task.Status == "Completed")
+    @* Data Table Container *@
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-4">Task & Attachments</th>
+                            <th>Assigned Intern</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Submission</th>
+                            <th style="min-width: 180px;" class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var task in Model)
                             {
-                                <span class="badge bg-success">
-                                    Completed
-                                </span>
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold text-dark">
+                                            <a asp-action="Details" asp-route-id="@task.Id" class="text-decoration-none text-dark">
+                                                @task.Title
+                                            </a>
+                                        </div>
+                                        <div class="d-flex gap-1 mt-1">
+                                            @if (!string.IsNullOrEmpty(task.AttachmentPath))
+                                            {
+                                                <a href="@task.AttachmentPath" target="_blank" download class="badge bg-danger-subtle text-danger border border-danger-subtle text-decoration-none small">
+                                                    <i class="bi bi-file-earmark-pdf me-1"></i> PDF Attached
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">@(task.Intern?.Name ?? "Unassigned")</div>
+                                        <small class="text-muted">Mentor: @(task.Intern?.Mentor?.FullName ?? "Unassigned")</small>
+                                    </td>
+                                    <td class="small">
+                                        <i class="bi bi-calendar-event me-1 text-muted"></i>@task.DueDate.ToString("MMM dd, yyyy")
+                                    </td>
+                                    <td>
+                                        @if (string.Equals(task.Status, "Completed", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <span class="badge bg-success">Completed</span>
+                                        }
+                                        else if (string.Equals(task.Status, "Submitted", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Submitted – Review</span>
+                                        }
+                                        else if (string.Equals(task.Status, "In Progress", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <span class="badge bg-info text-dark">In Progress</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@(string.IsNullOrWhiteSpace(task.Status) ? "Pending" : task.Status)</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(task.SubmissionFilePath) || !string.IsNullOrEmpty(task.SubmissionNote))
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                                <i class="bi bi-check2-all me-1"></i> Submitted
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-muted border">No submission</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="d-flex justify-content-end gap-1">
+                                            <a asp-action="Details" asp-route-id="@task.Id" class="btn btn-sm btn-outline-primary" title="View Details & Submission">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            @if (User.IsInRole("Admin") || User.IsInRole("HR") || User.IsInRole("Mentor"))
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@task.Id" class="btn btn-sm btn-outline-warning" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@task.Id" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
                             }
-                            else
-                            {
-                                <span class="badge bg-warning text-dark">
-                                    Pending
-                                </span>
-                            }
-                        </td>
-
-                        <td>
-
-                            <a asp-action="Edit"
-                               asp-route-id="@task.Id"
-                               class="btn btn-warning btn-sm">
-                                Edit
-                            </a>
-
-                            <a asp-action="Delete"
-                               asp-route-id="@task.Id"
-                               class="btn btn-danger btn-sm">
-                                Delete
-                            </a>
-
-                        </td>
-
-                    </tr>
-                }
-
-            </tbody>
-
-        </table>
-    }
-    else
-    {
-        <div class="alert alert-warning text-center">
-            No tasks found.
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-5">
+                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                                    No tasks found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    }
-
+    </div>
 </div>
 
-<script>
-
-    setTimeout(function () {
-
-        let alert = document.getElementById("successAlert");
-
-        if (alert) {
-            alert.style.display = "none";
-        }
-
-    }, 3000);
-
-</script>
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const successAlert = document.getElementById("successAlert");
+            if (successAlert) {
+                setTimeout(function () {
+                    const alertInstance = bootstrap.Alert.getOrCreateInstance(successAlert);
+                    alertInstance.close();
+                }, 3000);
+            }
+        });
+    </script>
+}

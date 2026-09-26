@@ -2,6 +2,23 @@ html {
   font-size: 14px;
 }
 
+/* New improved login styles */
+.login-full {
+  min-height: calc(100vh - 56px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg,#f4f7ff 0%,#eef6ff 50%);
+}
+.login-box {
+  width: 100%;
+  max-width: 420px;
+}
+.login-card { border-radius: 14px; box-shadow: 0 8px 30px rgba(20,30,60,0.12); }
+.login-brand { width: 72px; height:72px; border-radius:12px; background:#fff; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+.password-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6c757d; }
+.form-floating .form-control{ padding-right:3rem; }
+
 @media (min-width: 768px) {
   html {
     font-size: 16px;
@@ -12,14 +29,81 @@ html {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+html, body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa;
 }
 
-body {
-  margin-bottom: 60px;
+.navbar {
+  height: 56px;
+  z-index: 1030;
+  background-color: #212529 !important;
 }
+
+.sidebar {
+  position: fixed;
+  top: 56px;
+  bottom: 0;
+  left: 0;
+  width: 250px;
+  z-index: 1020;
+  overflow-y: auto;
+  background-color: #212529 !important;
+  transition: all .2s ease;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar.d-none { display: none !important; }
+
+.main-content {
+  min-height: calc(100vh - 56px);
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+}
+
+/* Small screens: overlay sidebar */
+@media (max-width: 991.98px) {
+  .sidebar {
+    width: 260px;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
+  }
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* Large screens: fixed sidebar with offset content */
+@media (min-width: 992px) {
+  .sidebar {
+    width: 250px;
+  }
+  .main-content {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+  }
+}
+
+.table-responsive { overflow-x: auto; }
+.card { border-radius: 12px; }
+
+@media print {
+  .no-print, .navbar, .sidebar { display: none !important; }
+  .main-content { width: 100%; margin-left: 0; }
+}
+
+table.table th, table.table td {
+  vertical-align: middle;
+}
+
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.card .card-body { padding: 1.25rem; }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);

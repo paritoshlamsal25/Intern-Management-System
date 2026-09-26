@@ -1,179 +1,165 @@
-﻿@model IEnumerable<IMS.Web.Models.LeaveRequest>
+@model IEnumerable<IMS.Web.Models.LeaveRequest>
+
+@{
+    ViewData["Title"] = "Leave Management";
+}
 
 <div class="container mt-4">
 
+    @* System Alert Feedback *@
     @if (TempData["Success"] != null)
     {
-        <div id="successAlert"
-             class="alert alert-success alert-dismissible fade show">
+        <div id="successAlert" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-            @TempData["Success"]
-
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert">
-            </button>
-
+    @if (TempData["Error"] != null)
+    {
+        <div id="errorAlert" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <h2>Leave Management</h2>
-
-        <a asp-action="Create"
-           class="btn btn-primary">
-            + Request Leave
-        </a>
-
+        <h2 class="fw-bold mb-0">Leave Management</h2>
+        @if (!User.IsInRole("Mentor"))
+        {
+            <a asp-action="Create" class="btn btn-primary shadow-sm">
+                <i class="bi bi-plus-lg me-1"></i> Request Leave
+            </a>
+        }
     </div>
 
-    <form method="get" class="mb-3">
-
-        <div class="input-group">
-
+    @* Search Form *@
+    <form method="get" class="mb-4">
+        <div class="input-group shadow-sm">
             <input type="text"
                    name="search"
                    value="@ViewBag.Search"
                    class="form-control"
                    placeholder="Search by intern name..." />
-
-            <button type="submit"
-                    class="btn btn-primary">
-                Search
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search me-1"></i> Search
             </button>
-
+            @if (!string.IsNullOrEmpty(ViewBag.Search as string))
+            {
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    Clear
+                </a>
+            }
         </div>
-
     </form>
 
-    @if (Model.Any())
-    {
-        <table class="table table-bordered table-hover shadow">
-
-            <thead class="table-dark">
-
-                <tr>
-                    <th>Intern</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Reason</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                @foreach (var leave in Model)
-                {
-                    <tr>
-
-                        <td>@leave.Intern?.Name</td>
-
-                        <td>
-                            @leave.StartDate.ToString("yyyy-MM-dd")
-                        </td>
-
-                        <td>
-                            @leave.EndDate.ToString("yyyy-MM-dd")
-                        </td>
-
-                        <td>@leave.Reason</td>
-
-                        <td>
-
-                            @if (leave.Status == "Approved")
+    @* Leave Table Container *@
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Intern</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th style="width: 260px;" class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var leave in Model)
                             {
-                                <span class="badge bg-success">
-                                    Approved
-                                </span>
+                                <tr>
+                                    <td class="fw-bold">@(leave.Intern?.Name ?? "Unassigned")</td>
+                                    <td>@leave.StartDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@leave.EndDate.ToString("yyyy-MM-dd")</td>
+                                    <td class="small text-truncate" style="max-width: 250px;" title="@leave.Reason">
+                                        @(string.IsNullOrWhiteSpace(leave.Reason) ? "-" : leave.Reason)
+                                    </td>
+                                    <td>
+                                        @switch (leave.Status)
+                                        {
+                                            case "Approved":
+                                                <span class="badge bg-success">Approved</span>
+                                                break;
+                                            case "Rejected":
+                                                <span class="badge bg-danger">Rejected</span>
+                                                break;
+                                            case "Pending":
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">@(leave.Status ?? "N/A")</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            @if ((User.IsInRole("Admin") || User.IsInRole("HR")) && leave.Status == "Pending")
+                                            {
+                                                <form asp-action="Approve" asp-route-id="@leave.Id" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-success" title="Approve">
+                                                        <i class="bi bi-check-lg"></i>
+                                                    </button>
+                                                </form>
+
+                                                <form asp-action="Reject" asp-route-id="@leave.Id" method="post" class="d-inline me-1">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-outline-danger" title="Reject">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                </form>
+                                            }
+
+                                            @if (User.IsInRole("Admin") || User.IsInRole("HR") || (User.IsInRole("Intern") && leave.Status == "Pending"))
+                                            {
+                                                <a asp-action="Edit"
+                                                   asp-route-id="@leave.Id"
+                                                   class="btn btn-warning" title="Edit">
+                                                    <i class="bi bi-pencil me-1"></i> Edit
+                                                </a>
+                                                <a asp-action="Delete"
+                                                   asp-route-id="@leave.Id"
+                                                   class="btn btn-danger" title="Delete">
+                                                    <i class="bi bi-trash me-1"></i> Delete
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
                             }
-                            else if (leave.Status == "Rejected")
-                            {
-                                <span class="badge bg-danger">
-                                    Rejected
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-warning text-dark">
-                                    Pending
-                                </span>
-                            }
-
-                        </td>
-
-                        <td>
-
-                            @if (leave.Status == "Pending")
-                            {
-                                <form asp-action="Approve"
-                                      asp-route-id="@leave.Id"
-                                      method="post"
-                                      class="d-inline">
-
-                                    <button type="submit"
-                                            class="btn btn-success btn-sm">
-                                        Approve
-                                    </button>
-
-                                </form>
-
-                                <form asp-action="Reject"
-                                      asp-route-id="@leave.Id"
-                                      method="post"
-                                      class="d-inline">
-
-                                    <button type="submit"
-                                            class="btn btn-danger btn-sm">
-                                        Reject
-                                    </button>
-
-                                </form>
-                            }
-
-                            <a asp-action="Edit"
-                               asp-route-id="@leave.Id"
-                               class="btn btn-warning btn-sm">
-                                Edit
-                            </a>
-
-                            <a asp-action="Delete"
-                               asp-route-id="@leave.Id"
-                               class="btn btn-secondary btn-sm">
-                                Delete
-                            </a>
-
-                        </td>
-
-                    </tr>
-                }
-
-            </tbody>
-
-        </table>
-    }
-    else
-    {
-        <div class="alert alert-warning text-center">
-            No leave requests found.
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                    No leave requests found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    }
-
+    </div>
 </div>
 
-<script>
-
-    setTimeout(function () {
-
-        let alert = document.getElementById("successAlert");
-
-        if (alert) {
-            alert.style.display = "none";
-        }
-
-    }, 3000);
-
-</script>
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const successAlert = document.getElementById("successAlert");
+            if (successAlert) {
+                setTimeout(function () {
+                    const alertInstance = bootstrap.Alert.getOrCreateInstance(successAlert);
+                    alertInstance.close();
+                }, 3000);
+            }
+        });
+    </script>
+}

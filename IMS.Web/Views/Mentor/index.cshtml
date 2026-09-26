@@ -1,115 +1,124 @@
 ﻿@model IEnumerable<IMS.Web.Models.Mentor>
-@if (TempData["Success"] != null)
-{
-    <div id="successAlert" class="alert alert-success alert-dismissible fade show">
 
-        @TempData["Success"]
-
-        <button type="button"
-                class="btn-close"
-                data-bs-dismiss="alert">
-        </button>
-
-    </div>
+@{
+    ViewData["Title"] = "Mentor Management";
 }
-
-<script>
-
-    setTimeout(function () {
-
-        let alert = document.getElementById("successAlert");
-
-        if (alert) {
-            alert.style.display = "none";
-        }
-
-    }, 3000);
-
-</script>
 
 <div class="container mt-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Mentor Management</h2>
+    @* System Alert Feedback *@
+    @if (TempData["Success"] != null)
+    {
+        <div id="successAlert" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-        <a asp-action="Create" class="btn btn-primary">
-            + Create Mentor
+    @if (TempData["Error"] != null)
+    {
+        <div id="errorAlert" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Mentor Management</h2>
+        <a asp-action="Create" class="btn btn-primary shadow-sm">
+            <i class="bi bi-person-plus-fill me-1"></i> Add Mentor
         </a>
     </div>
 
-    <form method="get" class="mb-3">
-
-        <div class="input-group">
-
+    @* Search Form *@
+    <form method="get" class="mb-4">
+        <div class="input-group shadow-sm">
             <input type="text"
                    name="search"
                    value="@ViewBag.Search"
                    class="form-control"
                    placeholder="Search by name or email..." />
-
-            <button class="btn btn-primary">
-                Search
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search me-1"></i> Search
             </button>
-
+            @if (!string.IsNullOrEmpty(ViewBag.Search as string))
+            {
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    Clear
+                </a>
+            }
         </div>
-
     </form>
 
-    @if (Model.Any())
-    {
-        <table class="table table-bordered table-hover table-striped shadow">
-
-            <thead class="table-dark">
-
-                <tr>
-                    <th>Id</th>
-                    <th>Full Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th width="180">Actions</th>
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                @foreach (var mentor in Model)
-                {
-                    <tr>
-
-                        <td>@mentor.Id</td>
-                        <td>@mentor.FullName</td>
-                        <td>@mentor.Email</td>
-                        <td>@mentor.PhoneNumber</td>
-
-                        <td>
-
-                            <a asp-action="Edit"
-                               asp-route-id="@mentor.Id"
-                               class="btn btn-warning btn-sm">
-                                Edit
-                            </a>
-
-                            <a asp-action="Delete"
-                               asp-route-id="@mentor.Id"
-                               class="btn btn-danger btn-sm">
-                                Delete
-                            </a>
-
-                        </td>
-
-                    </tr>
-                }
-
-            </tbody>
-
-        </table>
-    }
-    else
-    {
-        <div class="alert alert-warning text-center">
-            No mentors found.
+    @* Data Table Container *@
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 80px;">ID</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th style="width: 180px;" class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var mentor in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@mentor.Id</td>
+                                    <td>@mentor.FullName</td>
+                                    <td>@mentor.Email</td>
+                                    <td>
+                                        @(string.IsNullOrWhiteSpace(mentor.PhoneNumber) ? "-" : mentor.PhoneNumber)
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a asp-action="Edit"
+                                               asp-route-id="@mentor.Id"
+                                               class="btn btn-warning">
+                                                <i class="bi bi-pencil me-1"></i> Edit
+                                            </a>
+                                            <a asp-action="Delete"
+                                               asp-route-id="@mentor.Id"
+                                               class="btn btn-danger">
+                                                <i class="bi bi-trash me-1"></i> Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                    No mentors found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    }
-
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const successAlert = document.getElementById("successAlert");
+            if (successAlert) {
+                setTimeout(function () {
+                    const alertInstance = bootstrap.Alert.getOrCreateInstance(successAlert);
+                    alertInstance.close();
+                }, 3000);
+            }
+        });
+    </script>
+}

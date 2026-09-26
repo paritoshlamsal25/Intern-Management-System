@@ -1,0 +1,251 @@
+@model IMS.Web.Models.ProgressReport
+@using IMS.Web.Models
+
+@{
+    ViewData["Title"] = "Add Progress Report";
+    var interns = ViewBag.Interns as List<Intern> ?? new List<Intern>();
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-file-earmark-bar-graph text-primary me-2"></i>Add Progress Report</h3>
+            <p class="text-muted small mb-0">Evaluate intern task performance, assign marks, and record feedback.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Reports
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" id="progressReportForm">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3 d-none" id="valSummary"></div>
+
+                        @* ── Step 1: Select Intern ── *@
+                        <div class="mb-4">
+                            <label asp-for="InternId" class="form-label fw-bold">
+                                <i class="bi bi-person-circle text-primary me-1"></i> Intern
+                            </label>
+                            <select asp-for="InternId"
+                                    class="form-select"
+                                    id="internSelect"
+                                    asp-items="@(new SelectList(interns, "Id", "Name"))">
+                                <option value="">-- Select Intern --</option>
+                            </select>
+                            <span asp-validation-for="InternId" class="text-danger small"></span>
+                        </div>
+
+                        @* ── Step 2: Task Picker ── *@
+                        <div class="mb-4" id="taskSection">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-list-check text-success me-1"></i> Linked Task / Assignment
+                                <span class="badge bg-secondary ms-1 fw-normal">Optional</span>
+                            </label>
+                            <select name="TaskId" class="form-select" id="taskSelect">
+                                <option value="">-- Select a task (or leave blank for manual entry) --</option>
+                            </select>
+                            <div class="form-text text-muted">
+                                ✅ <strong>Submitted / Completed</strong> tasks are shown first. You can also select an
+                                overdue/pending task to evaluate it manually.
+                            </div>
+                        </div>
+
+                        @* ── Manual Assignment Reference (for overdue/no submission) ── *@
+                        <div class="mb-4" id="manualRefSection" style="display:none;">
+                            <label asp-for="AssignmentReference" class="form-label fw-bold">
+                                <i class="bi bi-journal-text text-warning me-1"></i> Assignment / Resource Reference
+                            </label>
+                            <input asp-for="AssignmentReference" class="form-control"
+                                   placeholder="e.g., REST API Design – Week 3 Assignment (not submitted)" />
+                            <div class="form-text text-warning">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                No submission was received. You are evaluating based on the assignment specification.
+                            </div>
+                        </div>
+
+                        <hr class="my-3" />
+
+                        @* ── Step 3: Topic & Marks ── *@
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="Topic" class="form-label fw-bold">
+                                    <i class="bi bi-tag text-info me-1"></i> Topic / Evaluation Area
+                                </label>
+                                <input asp-for="Topic" class="form-control"
+                                       placeholder="e.g., React Hooks, API Design, Database Schema..." />
+                                <span asp-validation-for="Topic" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label asp-for="Marks" class="form-label fw-bold">
+                                    <i class="bi bi-star-fill text-warning me-1"></i> Marks Obtained
+                                </label>
+                                <input asp-for="Marks" type="number" min="0" class="form-control"
+                                       placeholder="e.g., 85" id="marksInput" oninput="updateScore()" />
+                                <span asp-validation-for="Marks" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label asp-for="MaxMarks" class="form-label fw-bold">
+                                    <i class="bi bi-trophy text-success me-1"></i> Out of (Max)
+                                </label>
+                                <select asp-for="MaxMarks" class="form-select" id="maxMarksSelect" onchange="updateScore()">
+                                    <option value="">-- Select --</option>
+                                    <option value="50">50</option>
+                                    <option value="100" selected>100</option>
+                                    <option value="150">150</option>
+                                    <option value="200">200</option>
+                                    <option value="500">500</option>
+                                </select>
+                                <span asp-validation-for="MaxMarks" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        @* Live Score Preview *@
+                        <div id="scorePreview" class="alert alert-info border-0 d-none mb-4">
+                            <i class="bi bi-calculator me-2"></i>
+                            Score: <strong id="scoreDisplay">–</strong>
+                            <span class="badge ms-2" id="scoreBadge"></span>
+                        </div>
+
+                        @* ── Step 4: Date ── *@
+                        <div class="mb-4">
+                            <label asp-for="Date" class="form-label fw-bold">
+                                <i class="bi bi-calendar-date text-secondary me-1"></i> Report Date
+                            </label>
+                            <input asp-for="Date" type="date" class="form-control" style="max-width: 220px;" />
+                            <span asp-validation-for="Date" class="text-danger small"></span>
+                        </div>
+
+                        @* ── Step 5: Mentor Notes ── *@
+                        <div class="mb-4">
+                            <label asp-for="Notes" class="form-label fw-bold">
+                                <i class="bi bi-chat-left-text text-primary me-1"></i> Mentor Notes / Feedback
+                            </label>
+                            <textarea asp-for="Notes" class="form-control" rows="4"
+                                      placeholder="Enter your evaluation notes, feedback, strengths, areas to improve..."></textarea>
+                            <span asp-validation-for="Notes" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-2">
+                            <button type="submit" class="btn btn-success shadow-sm">
+                                <i class="bi bi-file-earmark-check-fill me-1"></i> Save Report
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary shadow-sm">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+        const internSelect = document.getElementById('internSelect');
+        const taskSelect = document.getElementById('taskSelect');
+        const manualRef = document.getElementById('manualRefSection');
+
+        // When intern changes, load their tasks via AJAX
+        internSelect.addEventListener('change', function () {
+            const internId = this.value;
+            taskSelect.innerHTML = '<option value="">-- Loading tasks... --</option>';
+            taskSelect.disabled = true;
+
+            if (!internId) {
+                taskSelect.innerHTML = '<option value="">-- Select a task --</option>';
+                taskSelect.disabled = false;
+                return;
+            }
+
+            fetch(`/ProgressReport/GetInternTasks?internId=${internId}`)
+                .then(r => r.json())
+                .then(tasks => {
+                    taskSelect.innerHTML = '<option value="">-- Select a task (or leave blank) --</option>';
+
+                    // Group: submitted first, then others
+                    const submitted = tasks.filter(t => t.isSubmitted);
+                    const others = tasks.filter(t => !t.isSubmitted);
+
+                    if (submitted.length > 0) {
+                        const grp = document.createElement('optgroup');
+                        grp.label = '✅ Submitted / Completed Tasks';
+                        submitted.forEach(t => {
+                            const o = document.createElement('option');
+                            o.value = t.id;
+                            o.textContent = t.title;
+                            o.dataset.submitted = '1';
+                            grp.appendChild(o);
+                        });
+                        taskSelect.appendChild(grp);
+                    }
+
+                    if (others.length > 0) {
+                        const grp2 = document.createElement('optgroup');
+                        grp2.label = '⚠️ Not Yet Submitted (Overdue/Pending)';
+                        others.forEach(t => {
+                            const o = document.createElement('option');
+                            o.value = t.id;
+                            o.textContent = t.title;
+                            o.dataset.submitted = '0';
+                            grp2.appendChild(o);
+                        });
+                        taskSelect.appendChild(grp2);
+                    }
+
+                    if (tasks.length === 0) {
+                        taskSelect.innerHTML = '<option value="">-- No tasks found for this intern --</option>';
+                    }
+
+                    taskSelect.disabled = false;
+                })
+                .catch(() => {
+                    taskSelect.innerHTML = '<option value="">-- Error loading tasks --</option>';
+                    taskSelect.disabled = false;
+                });
+        });
+
+        // Show manual reference box when a non-submitted task is selected
+        taskSelect.addEventListener('change', function () {
+            const selected = this.options[this.selectedIndex];
+            if (selected && selected.dataset.submitted === '0') {
+                manualRef.style.display = '';
+            } else {
+                manualRef.style.display = 'none';
+            }
+        });
+
+        // Score preview
+        function updateScore() {
+            const marks = parseInt(document.getElementById('marksInput').value);
+            const max = parseInt(document.getElementById('maxMarksSelect').value);
+            const preview = document.getElementById('scorePreview');
+            const display = document.getElementById('scoreDisplay');
+            const badge = document.getElementById('scoreBadge');
+
+            if (!isNaN(marks) && !isNaN(max) && max > 0) {
+                const pct = Math.round((marks / max) * 100);
+                display.textContent = marks + ' / ' + max + ' (' + pct + '%)';
+                preview.classList.remove('d-none');
+
+                if (pct >= 80) { badge.textContent = 'Excellent'; badge.className = 'badge bg-success ms-2'; }
+                else if (pct >= 60) { badge.textContent = 'Good'; badge.className = 'badge bg-info text-dark ms-2'; }
+                else if (pct >= 40) { badge.textContent = 'Average'; badge.className = 'badge bg-warning text-dark ms-2'; }
+                else { badge.textContent = 'Needs Improvement'; badge.className = 'badge bg-danger ms-2'; }
+            } else {
+                preview.classList.add('d-none');
+            }
+        }
+
+        // Show validation summary if it has content
+        const valSummary = document.getElementById('valSummary');
+        if (valSummary && valSummary.querySelectorAll('li').length > 0)
+            valSummary.classList.remove('d-none');
+    </script>
+}

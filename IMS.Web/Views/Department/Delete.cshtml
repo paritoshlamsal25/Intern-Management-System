@@ -1,36 +1,34 @@
 ﻿@model IMS.Web.Models.Department
 
+@{
+    ViewData["Title"] = "Delete Department";
+}
+
 <div class="container mt-5">
-
-    <div class="card shadow">
-
+    <div class="card shadow border-0">
         <div class="card-header bg-danger text-white">
-            <h3>Delete Department</h3>
+            <h3 class="mb-0">Delete Department</h3>
         </div>
 
         <div class="card-body">
+            <div class="alert alert-warning border-0 shadow-sm mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Warning:</strong> Are you sure you want to delete the <strong>@Model.Name</strong> department? This action cannot be undone.
+            </div>
 
-            <h5>
-                Are you sure you want to delete
-                <strong>@Model.Name</strong> ?
-            </h5>
-
-            <form method="post">
-
+            <form asp-action="Delete" method="post">
+                @Html.AntiForgeryToken()
                 <input asp-for="Id" type="hidden" />
 
-                <button class="btn btn-danger">
-                    Delete
-                </button>
-
-                <a asp-action="Index" class="btn btn-secondary">
-                    Cancel
-                </a>
-
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash-fill me-1"></i> Delete
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </a>
+                </div>
             </form>
-
         </div>
-
     </div>
-
 </div>

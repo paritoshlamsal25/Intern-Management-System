@@ -1,122 +1,85 @@
 ﻿@model IMS.Web.Models.LeaveRequest
 
+@{
+    ViewData["Title"] = "Request Leave";
+}
+
 <div class="container mt-5">
-
-    <div class="card shadow">
-
+    <div class="card shadow border-0">
         <div class="card-header bg-primary text-white">
-            <h3>Request Leave</h3>
+            <h3 class="mb-0">Request Leave</h3>
         </div>
 
         <div class="card-body">
+            <form asp-controller="Leave" asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
 
-            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                <div asp-validation-summary="ModelOnly"
-                     class="text-danger mb-3">
-                </div>
-
+                @* Intern Selection or Readonly Display *@
                 <div class="mb-3">
-
-                    <label asp-for="InternId"
-                           class="form-label">
-                        Intern
-                    </label>
-
-                    <select asp-for="InternId"
-                            class="form-select">
-
-                        <option value="">
-                            -- Select Intern --
-                        </option>
-
-                        @foreach (var intern in ViewBag.Interns)
-                        {
-                            <option value="@intern.Id">
-                                @intern.Name
-                            </option>
-                        }
-
-                    </select>
-
-                    <span asp-validation-for="InternId"
-                          class="text-danger"></span>
-
+                    @if (ViewBag.CurrentInternId != null)
+                    {
+                        <input type="hidden" asp-for="InternId" value="@ViewBag.CurrentInternId" />
+                        <label class="form-label fw-bold">Intern</label>
+                        <input type="text" class="form-control" value="@((ViewBag.CurrentInternName as string) ?? "")" readonly />
+                        <span asp-validation-for="InternId" class="text-danger"></span>
+                    }
+                    else
+                    {
+                        <label asp-for="InternId" class="form-label fw-bold">Intern</label>
+                        <select asp-for="InternId" class="form-select">
+                            <option value="">-- Select Intern --</option>
+                            @if (ViewBag.Interns != null)
+                            {
+                                foreach (var intern in (System.Collections.IEnumerable)ViewBag.Interns)
+                                {
+                                    var id = intern.GetType().GetProperty("Id")?.GetValue(intern)?.ToString() ?? "";
+                                    var name = intern.GetType().GetProperty("Name")?.GetValue(intern)?.ToString() ?? "";
+                                    <option value="@id">@name</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="InternId" class="text-danger"></span>
+                    }
                 </div>
 
+                @* Date Pickers *@
                 <div class="row">
-
                     <div class="col-md-6 mb-3">
-
-                        <label asp-for="StartDate"
-                               class="form-label">
-                            Start Date
-                        </label>
-
-                        <input asp-for="StartDate"
-                               type="date"
-                               class="form-control" />
-
-                        <span asp-validation-for="StartDate"
-                              class="text-danger"></span>
-
+                        <label asp-for="StartDate" class="form-label fw-bold">Start Date</label>
+                        <input asp-for="StartDate" type="date" class="form-control" />
+                        <span asp-validation-for="StartDate" class="text-danger"></span>
                     </div>
-
                     <div class="col-md-6 mb-3">
-
-                        <label asp-for="EndDate"
-                               class="form-label">
-                            End Date
-                        </label>
-
-                        <input asp-for="EndDate"
-                               type="date"
-                               class="form-control" />
-
-                        <span asp-validation-for="EndDate"
-                              class="text-danger"></span>
-
+                        <label asp-for="EndDate" class="form-label fw-bold">End Date</label>
+                        <input asp-for="EndDate" type="date" class="form-control" />
+                        <span asp-validation-for="EndDate" class="text-danger"></span>
                     </div>
-
                 </div>
 
+                @* Reason Textarea *@
                 <div class="mb-3">
-
-                    <label asp-for="Reason"
-                           class="form-label">
-                        Reason
-                    </label>
-
-                    <textarea asp-for="Reason"
-                              class="form-control"
-                              rows="4"
-                              placeholder="Enter reason for leave"></textarea>
-
-                    <span asp-validation-for="Reason"
-                          class="text-danger"></span>
-
+                    <label asp-for="Reason" class="form-label fw-bold">Reason</label>
+                    <textarea asp-for="Reason" class="form-control" rows="4" placeholder="Enter reason for leave..."></textarea>
+                    <span asp-validation-for="Reason" class="text-danger"></span>
                 </div>
 
-                <button type="submit"
-                        class="btn btn-success">
-                    Submit Request
-                </button>
-
-                <a asp-action="Index"
-                   class="btn btn-secondary">
-                    Back
-                </a>
-
+                @* Action Buttons *@
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success shadow-sm">
+                        <i class="bi bi-send me-1"></i> Submit Request
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary shadow-sm">
+                        <i class="bi bi-arrow-left me-1"></i> Back to List
+                    </a>
+                </div>
             </form>
-
         </div>
-
     </div>
-
 </div>
 
-@section Scripts
-{
+@section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }

@@ -1,0 +1,41 @@
+﻿@model IMS.Web.Models.ViewModels.AdminDashboardViewModel
+
+<div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <h2 class="fw-bold mb-0">System Admin Dashboard ⚙️</h2>
+    <span class="badge bg-danger fs-6">Administrator Access</span>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-white-50">Total System Users</h6>
+                <h2 class="card-title fw-bold mb-0">@Model.TotalUsers</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-white-50">Departments</h6>
+                <h2 class="card-title fw-bold mb-0">@Model.TotalDepartments</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-white-50">Total Interns</h6>
+                <h2 class="card-title fw-bold mb-0">@Model.TotalInterns</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-dark text-white shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-white-50">Total Tasks</h6>
+                <h2 class="card-title fw-bold mb-0">@Model.TotalTasks</h2>
+            </div>
+        </div>
+    </div>
+</div>

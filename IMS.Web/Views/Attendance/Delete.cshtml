@@ -1,52 +1,65 @@
 ﻿@model IMS.Web.Models.Attendance
 
+@{
+    ViewData["Title"] = "Delete Attendance";
+}
+
 <div class="container mt-5">
-
-    <div class="card shadow">
-
+    <div class="card shadow border-0">
         <div class="card-header bg-danger text-white">
-            <h3>Delete Attendance</h3>
+            <h3 class="mb-0">Delete Attendance Record</h3>
         </div>
 
         <div class="card-body">
+            <div class="alert alert-warning border-0 shadow-sm mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Warning:</strong> Are you sure you want to delete this attendance record? This action cannot be undone.
+            </div>
 
-            <h5>Are you sure you want to delete this attendance record?</h5>
+            <div class="card bg-light border-0 mb-4">
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3 text-muted">Intern Name</dt>
+                        <dd class="col-sm-9 fw-bold">@(Model.Intern?.Name ?? "N/A")</dd>
 
-            <hr />
+                        <dt class="col-sm-3 text-muted">Date</dt>
+                        <dd class="col-sm-9">@Model.Date.ToString("yyyy-MM-dd")</dd>
 
-            <p>
-                <strong>Intern:</strong>
-                @Model.Intern?.Name
-            </p>
+                        <dt class="col-sm-3 text-muted">Status</dt>
+                        <dd class="col-sm-9">
+                            @switch (Model.Status)
+                            {
+                                case "Present":
+                                    <span class="badge bg-success">Present</span>
+                                    break;
+                                case "Absent":
+                                    <span class="badge bg-danger">Absent</span>
+                                    break;
+                                case "Late":
+                                    <span class="badge bg-warning text-dark">Late</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-secondary">@Model.Status</span>
+                                    break;
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
 
-            <p>
-                <strong>Date:</strong>
-                @Model.Date.ToString("yyyy-MM-dd")
-            </p>
-
-            <p>
-                <strong>Status:</strong>
-                @Model.Status
-            </p>
-
-            <form method="post">
-
+            <form asp-action="Delete" method="post">
+                @Html.AntiForgeryToken()
                 <input asp-for="Id" type="hidden" />
 
-                <button type="submit"
-                        class="btn btn-danger">
-                    Delete
-                </button>
-
-                <a asp-action="Index"
-                   class="btn btn-secondary">
-                    Cancel
-                </a>
-
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger shadow-sm">
+                        <i class="bi bi-trash-fill me-1"></i> Confirm Delete
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary shadow-sm">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </a>
+                </div>
             </form>
-
         </div>
-
     </div>
-
 </div>

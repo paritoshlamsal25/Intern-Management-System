@@ -1,0 +1,125 @@
+@model IEnumerable<IMS.Web.Models.AuditLog>
+
+@{
+    ViewData["Title"] = "Audit Logs";
+}
+
+<div class="container mt-4">
+
+    @* System Feedback Banner *@
+    @if (TempData["Success"] != null)
+    {
+        <div id="successAlert" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-journal-text me-2"></i>Audit Logs</h2>
+            <span class="text-muted">Track administrative actions and system modifications</span>
+        </div>
+    </div>
+
+    @* Filter Form *@
+    <form method="get" class="mb-4">
+        <div class="input-group shadow-sm">
+            <input type="text"
+                   name="search"
+                   value="@ViewBag.Search"
+                   class="form-control"
+                   placeholder="Search action, entity, or user..." />
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-filter me-1"></i> Filter
+            </button>
+            @if (!string.IsNullOrEmpty(ViewBag.Search as string))
+            {
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    Clear
+                </a>
+            }
+        </div>
+    </form>
+
+    @* Audit Log Table *@
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Action</th>
+                            <th>Entity</th>
+                            <th>Entity ID</th>
+                            <th>Performed By</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var log in Model)
+                            {
+                                <tr>
+                                    <td class="text-nowrap small text-muted">
+                                        <i class="bi bi-clock me-1"></i>@log.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+                                    </td>
+                                    <td>
+                                        @switch (log.Action?.ToUpper())
+                                        {
+                                            case "CREATE":
+                                                <span class="badge bg-success">CREATE</span>
+                                                break;
+                                            case "UPDATE":
+                                                <span class="badge bg-warning text-dark">UPDATE</span>
+                                                break;
+                                            case "DELETE":
+                                                <span class="badge bg-danger">DELETE</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-info text-dark">@(log.Action ?? "N/A")</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td><span class="badge bg-secondary">@log.Entity</span></td>
+                                    <td class="fw-bold">@log.EntityId</td>
+                                    <td>
+                                        <i class="bi bi-person me-1"></i>@(log.PerformedBy ?? "System")
+                                    </td>
+                                    <td class="small text-truncate" style="max-width: 300px;" title="@log.Details">
+                                        @(log.Details ?? "-")
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                    No audit records found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const successAlert = document.getElementById("successAlert");
+            if (successAlert) {
+                setTimeout(function () {
+                    const alertInstance = bootstrap.Alert.getOrCreateInstance(successAlert);
+                    alertInstance.close();
+                }, 3000);
+            }
+        });
+    </script>
+}

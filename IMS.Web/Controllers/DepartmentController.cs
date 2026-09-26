@@ -1,11 +1,12 @@
 ﻿using IMS.Web.Data;
 using IMS.Web.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace IMS.Web.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,HR")] // Accessible by both Admin and HR roles
     public class DepartmentController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -15,52 +16,60 @@ namespace IMS.Web.Controllers
             _context = context;
         }
 
-        public IActionResult Index(string search)
+        // GET: Departments List
+        [HttpGet]
+        public async Task<IActionResult> Index(string search)
         {
             var departments = _context.Departments.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
-                departments = departments.Where(x => x.Name.Contains(search));
+                departments = departments.Where(x => x.Name != null && x.Name.Contains(search));
             }
 
             ViewBag.Search = search;
 
-            return View(departments.ToList());
+            var result = await departments.ToListAsync();
+            return View(result);
         }
 
+        // GET: Create Department
+        [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
 
+        // POST: Create Department
         [HttpPost]
-        public IActionResult Create(Department department)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Department department)
         {
             if (ModelState.IsValid)
             {
-                bool exists = _context.Departments.Any(x => x.Name == department.Name);
+                bool exists = await _context.Departments.AnyAsync(x => x.Name == department.Name);
 
                 if (exists)
                 {
-                    ModelState.AddModelError("Name", "Department already exists.");
+                    ModelState.AddModelError("Name", "Department name already exists.");
                     return View(department);
                 }
 
                 _context.Departments.Add(department);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Department created successfully!";
-
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
             return View(department);
         }
 
-        public IActionResult Edit(int id)
+        // GET: Edit Department
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
         {
-            var department = _context.Departments.Find(id);
+            var department = await _context.Departments.FindAsync(id);
 
             if (department == null)
             {
@@ -70,35 +79,38 @@ namespace IMS.Web.Controllers
             return View(department);
         }
 
+        // POST: Edit Department
         [HttpPost]
-        public IActionResult Edit(Department department)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Department department)
         {
             if (ModelState.IsValid)
             {
-                bool exists = _context.Departments.Any(x =>
+                bool exists = await _context.Departments.AnyAsync(x =>
                     x.Name == department.Name &&
                     x.Id != department.Id);
 
                 if (exists)
                 {
-                    ModelState.AddModelError("Name", "Department already exists.");
+                    ModelState.AddModelError("Name", "Department name already exists.");
                     return View(department);
                 }
 
                 _context.Departments.Update(department);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Department updated successfully!";
-
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
             return View(department);
         }
 
-        public IActionResult Delete(int id)
+        // GET: Delete Department Confirmation
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
         {
-            var department = _context.Departments.Find(id);
+            var department = await _context.Departments.FindAsync(id);
 
             if (department == null)
             {
@@ -108,20 +120,30 @@ namespace IMS.Web.Controllers
             return View(department);
         }
 
+        // POST: Delete Department
         [HttpPost, ActionName("Delete")]
-        public IActionResult DeleteConfirmed(int id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var department = _context.Departments.Find(id);
+            var department = await _context.Departments.FindAsync(id);
 
             if (department != null)
             {
+                // Prevent deletion if interns are currently assigned to this department
+                bool hasAssignedInterns = await _context.Interns.AnyAsync(i => i.DepartmentId == id);
+                if (hasAssignedInterns)
+                {
+                    TempData["Error"] = "Cannot delete this department because there are interns assigned to it.";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 _context.Departments.Remove(department);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Department deleted successfully!";
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
     }
 }

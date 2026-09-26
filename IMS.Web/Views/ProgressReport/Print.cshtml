@@ -1,0 +1,102 @@
+@model IEnumerable<IMS.Web.Models.ProgressReport>
+
+@{
+    ViewData["Title"] = "Progress Reports - Print Preview";
+}
+
+<style>
+    @@media print {
+        .no-print {
+            display: none !important;
+        }
+
+        body {
+            background-color: #fff !important;
+            font-size: 12pt;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+    }
+</style>
+
+<div class="container mt-4">
+
+    @* Action Header *@
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+        <h2 class="fw-bold mb-0">Progress Reports Report</h2>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-primary shadow-sm">
+                <i class="bi bi-printer-fill me-1"></i> Print / Save as PDF
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Reports
+            </a>
+        </div>
+    </div>
+
+    @* Document Header (Visible in print) *@
+    <div class="mb-4">
+        <h3 class="fw-bold text-uppercase mb-1">Internship Management System</h3>
+        <p class="text-muted small mb-0">Generated Progress Reports Summary • @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+    </div>
+
+    @* Data Table Container *@
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 80px;">ID</th>
+                            <th>Intern</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var report in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@report.Id</td>
+                                    <td>@(report.Intern?.Name ?? "Unassigned")</td>
+                                    <td>@report.Date.ToString("yyyy-MM-dd")</td>
+                                    <td>
+                                        @if (string.Equals(report.Status, "On Track", StringComparison.OrdinalIgnoreCase) || string.Equals(report.Status, "Completed", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <span class="badge bg-success">@report.Status</span>
+                                        }
+                                        else if (string.Equals(report.Status, "Needs Attention", StringComparison.OrdinalIgnoreCase) || string.Equals(report.Status, "Delayed", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <span class="badge bg-danger">@report.Status</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info text-dark">@(string.IsNullOrWhiteSpace(report.Status) ? "Pending" : report.Status)</span>
+                                        }
+                                    </td>
+                                    <td class="small">
+                                        @(string.IsNullOrWhiteSpace(report.Notes) ? "-" : report.Notes)
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    No progress reports found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

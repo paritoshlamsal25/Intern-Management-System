@@ -1,57 +1,68 @@
 ﻿@model IMS.Web.Models.TaskItem
 
+@{
+    ViewData["Title"] = "Delete Task";
+}
+
 <div class="container mt-5">
-
-    <div class="card shadow">
-
+    <div class="card shadow border-0">
         <div class="card-header bg-danger text-white">
-            <h3>Delete Task</h3>
+            <h3 class="mb-0">Delete Task</h3>
         </div>
 
         <div class="card-body">
+            <div class="alert alert-warning border-0 shadow-sm mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Warning:</strong> Are you sure you want to delete task <strong>"@Model.Title"</strong>? This action cannot be undone.
+            </div>
 
-            <h5>Are you sure you want to delete this task?</h5>
+            <div class="card bg-light border-0 mb-4">
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3 text-muted">Title</dt>
+                        <dd class="col-sm-9 fw-bold">@Model.Title</dd>
 
-            <hr />
+                        <dt class="col-sm-3 text-muted">Description</dt>
+                        <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.Description) ? "-" : Model.Description)</dd>
 
-            <p>
-                <strong>Title:</strong>
-                @Model.Title
-            </p>
+                        <dt class="col-sm-3 text-muted">Assigned Intern</dt>
+                        <dd class="col-sm-9">@(Model.Intern?.Name ?? "Unassigned")</dd>
 
-            <p>
-                <strong>Intern:</strong>
-                @Model.Intern?.Name
-            </p>
+                        <dt class="col-sm-3 text-muted">Due Date</dt>
+                        <dd class="col-sm-9">@Model.DueDate.ToString("yyyy-MM-dd")</dd>
 
-            <p>
-                <strong>Due Date:</strong>
-                @Model.DueDate.ToString("yyyy-MM-dd")
-            </p>
+                        <dt class="col-sm-3 text-muted">Status</dt>
+                        <dd class="col-sm-9">
+                            @if (string.Equals(Model.Status, "Completed", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <span class="badge bg-success">@Model.Status</span>
+                            }
+                            else if (string.Equals(Model.Status, "In Progress", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <span class="badge bg-warning text-dark">@Model.Status</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">@(string.IsNullOrWhiteSpace(Model.Status) ? "Pending" : Model.Status)</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
 
-            <p>
-                <strong>Status:</strong>
-                @Model.Status
-            </p>
-
-            <form method="post">
-
+            <form asp-action="Delete" method="post">
+                @Html.AntiForgeryToken()
                 <input asp-for="Id" type="hidden" />
 
-                <button type="submit"
-                        class="btn btn-danger">
-                    Delete
-                </button>
-
-                <a asp-action="Index"
-                   class="btn btn-secondary">
-                    Cancel
-                </a>
-
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger shadow-sm">
+                        <i class="bi bi-trash-fill me-1"></i> Confirm Delete
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary shadow-sm">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </a>
+                </div>
             </form>
-
         </div>
-
     </div>
-
 </div>

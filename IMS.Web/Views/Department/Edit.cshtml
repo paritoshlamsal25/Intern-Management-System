@@ -1,40 +1,41 @@
 ﻿@model IMS.Web.Models.Department
 
+@{
+    ViewData["Title"] = "Edit Department";
+}
+
 <div class="container mt-5">
-
-    <div class="card shadow">
-
-        <div class="card-header bg-primary text-white">
-            <h3>Create Department</h3>
+    <div class="card shadow border-0">
+        <div class="card-header bg-warning text-dark">
+            <h3 class="mb-0">Edit Department</h3>
         </div>
 
         <div class="card-body">
-
-            <form method="post">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
                 <input asp-for="Id" type="hidden" />
 
                 <div class="mb-3">
-
-                    <label asp-for="Name"></label>
-
-                    <input asp-for="Name" class="form-control" />
-
+                    <label asp-for="Name" class="form-label fw-bold"></label>
+                    <input asp-for="Name" class="form-control" placeholder="Enter department name..." />
                     <span asp-validation-for="Name" class="text-danger"></span>
-
                 </div>
 
-                <button class="btn btn-success">
-                    Save
-                </button>
-
-                <a asp-action="Index" class="btn btn-secondary">
-                    Back
-                </a>
-
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning text-dark">
+                        <i class="bi bi-save me-1"></i> Save Changes
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to List
+                    </a>
+                </div>
             </form>
-
         </div>
-
     </div>
-
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

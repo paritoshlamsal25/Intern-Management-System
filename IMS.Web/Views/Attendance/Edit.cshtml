@@ -1,95 +1,71 @@
 ﻿@model IMS.Web.Models.Attendance
 
+@{
+    ViewData["Title"] = "Edit Attendance";
+}
+
 <div class="container mt-5">
-
-    <div class="card shadow">
-
-        <div class="card-header bg-warning">
-            <h3>Edit Attendance</h3>
+    <div class="card shadow border-0">
+        <div class="card-header bg-warning text-dark">
+            <h3 class="mb-0">Edit Attendance Record</h3>
         </div>
 
         <div class="card-body">
-
-            <form method="post">
-
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
                 <input asp-for="Id" type="hidden" />
 
-                <div asp-validation-summary="ModelOnly"
-                     class="text-danger mb-3">
-                </div>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
+                @* Intern Select Dropdown *@
                 <div class="mb-3">
-
-                    <label asp-for="InternId"
-                           class="form-label">
-                        Intern
-                    </label>
-
-                    <select asp-for="InternId"
-                            class="form-select">
-
-                        @foreach (var intern in ViewBag.Interns)
+                    <label asp-for="InternId" class="form-label fw-bold">Intern</label>
+                    <select asp-for="InternId" class="form-select">
+                        <option value="">-- Select Intern --</option>
+                        @if (ViewBag.Interns != null)
                         {
-                            <option value="@intern.Id">
-                                @intern.Name
-                            </option>
+                            @foreach (var intern in ViewBag.Interns)
+                            {
+                                <option value="@intern.Id">@intern.Name</option>
+                            }
                         }
-
                     </select>
-
+                    <span asp-validation-for="InternId" class="text-danger"></span>
                 </div>
 
+                @* Date Field *@
                 <div class="mb-3">
-
-                    <label asp-for="Date"
-                           class="form-label">
-                        Date
-                    </label>
-
-                    <input asp-for="Date"
-                           type="date"
-                           class="form-control" />
-
+                    <label asp-for="Date" class="form-label fw-bold"></label>
+                    <input asp-for="Date" type="date" class="form-control" />
+                    <span asp-validation-for="Date" class="text-danger"></span>
                 </div>
 
+                @* Status Dropdown *@
                 <div class="mb-3">
-
-                    <label asp-for="Status"
-                           class="form-label">
-                        Status
-                    </label>
-
-                    <select asp-for="Status"
-                            class="form-select">
-
+                    <label asp-for="Status" class="form-label fw-bold"></label>
+                    <select asp-for="Status" class="form-select">
                         <option value="Present">Present</option>
                         <option value="Absent">Absent</option>
                         <option value="Late">Late</option>
-
+                        <option value="Half Day">Half Day</option>
                     </select>
-
+                    <span asp-validation-for="Status" class="text-danger"></span>
                 </div>
 
-                <button type="submit"
-                        class="btn btn-success">
-                    Update
-                </button>
-
-                <a asp-action="Index"
-                   class="btn btn-secondary">
-                    Back
-                </a>
-
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning text-dark shadow-sm">
+                        <i class="bi bi-save me-1"></i> Update Record
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary shadow-sm">
+                        <i class="bi bi-arrow-left me-1"></i> Back to List
+                    </a>
+                </div>
             </form>
-
         </div>
-
     </div>
-
 </div>
 
-@section Scripts
-{
+@section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }

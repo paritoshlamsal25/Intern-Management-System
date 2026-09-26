@@ -1,0 +1,247 @@
+@model IEnumerable<IMS.Web.Models.ProgressReport>
+
+@{
+    ViewData["Title"] = "Progress Reports";
+    var selectedInternId = ViewContext.HttpContext.Request.Query["internId"].ToString();
+    var fromDate = ViewContext.HttpContext.Request.Query["from"].ToString();
+    var toDate = ViewContext.HttpContext.Request.Query["to"].ToString();
+    var internsList = ViewBag.Interns as IEnumerable<IMS.Web.Models.Intern> ?? new List<IMS.Web.Models.Intern>();
+    var canCreate = User.IsInRole("Admin") || User.IsInRole("HR") || User.IsInRole("Mentor");
+}
+
+<div class="container mt-4">
+
+    @* Alert Feedback *@
+    @if (TempData["Success"] != null)
+    {
+        <div id="successAlert" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-file-earmark-bar-graph text-primary me-2"></i>Progress Reports</h2>
+            <p class="text-muted small mb-0">View intern evaluation marks, task results, and mentor feedback.</p>
+        </div>
+        <div class="d-flex gap-2">
+            @if (canCreate)
+            {
+                <a asp-action="Create" class="btn btn-primary shadow-sm">
+                    <i class="bi bi-plus-lg me-1"></i> New Report
+                </a>
+            }
+            <a asp-action="ExportCsv"
+               asp-route-internId="@selectedInternId"
+               asp-route-from="@fromDate"
+               asp-route-to="@toDate"
+               class="btn btn-outline-secondary shadow-sm">
+                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
+            </a>
+        </div>
+    </div>
+
+    @* Filter Form *@
+    <form method="get" class="card card-body border-0 shadow-sm mb-4">
+        <div class="row g-2 align-items-center">
+            @if (!User.IsInRole("Intern"))
+            {
+                <div class="col-md-4">
+                    <label class="form-label small text-muted mb-1">Intern</label>
+                    <select name="internId" class="form-select">
+                        <option value="">All Interns</option>
+                        @foreach (var intern in internsList)
+                        {
+                            var isSelected = selectedInternId == intern.Id.ToString();
+                            <option value="@intern.Id" selected="@isSelected">@intern.Name</option>
+                        }
+                    </select>
+                </div>
+            }
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">From Date</label>
+                <input type="date" name="from" value="@fromDate" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">To Date</label>
+                <input type="date" name="to" value="@toDate" class="form-control" />
+            </div>
+            <div class="col-md-2 d-flex align-items-end mt-3 mt-md-0">
+                <div class="w-100 d-grid gap-1">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-funnel me-1"></i> Filter
+                    </button>
+                    @if (!string.IsNullOrEmpty(selectedInternId) || !string.IsNullOrEmpty(fromDate) || !string.IsNullOrEmpty(toDate))
+                    {
+                        <a asp-action="Index" class="btn btn-sm btn-link text-decoration-none text-muted text-center">Clear Filters</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </form>
+
+    @* Summary Stats *@
+    @if (Model != null && Model.Any())
+    {
+        var totalReports = Model.Count();
+        var withMarks = Model.Where(r => r.Marks.HasValue && r.MaxMarks.HasValue && r.MaxMarks > 0).ToList();
+        var avgPct = withMarks.Any()
+            ? Math.Round(withMarks.Average(r => (double)r.Marks!.Value / r.MaxMarks!.Value * 100), 1)
+            : (double?)null;
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-4">
+                <div class="card border-0 shadow-sm text-center p-3 rounded-4">
+                    <div class="fs-2 fw-bold text-primary">@totalReports</div>
+                    <div class="text-muted small">Total Reports</div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card border-0 shadow-sm text-center p-3 rounded-4">
+                    <div class="fs-2 fw-bold text-success">@withMarks.Count</div>
+                    <div class="text-muted small">Reports with Marks</div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card border-0 shadow-sm text-center p-3 rounded-4">
+                    <div class="fs-2 fw-bold @(avgPct >= 80 ? "text-success" : avgPct >= 60 ? "text-info" : avgPct >= 40 ? "text-warning" : "text-danger")">
+                        @(avgPct.HasValue ? avgPct.Value + "%" : "–")
+                    </div>
+                    <div class="text-muted small">Average Score</div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @* Data Table *@
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-4">#</th>
+                            <th>Intern</th>
+                            <th>Task / Assignment</th>
+                            <th>Topic</th>
+                            <th>Marks</th>
+                            <th>Score</th>
+                            <th>Date</th>
+                            <th>Notes</th>
+                            @if (User.IsInRole("Admin") || User.IsInRole("HR") || User.IsInRole("Mentor"))
+                            {
+                                <th class="text-end pe-4">Actions</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var report in Model)
+                            {
+                                double? pct = (report.Marks.HasValue && report.MaxMarks.HasValue && report.MaxMarks > 0)
+                                    ? Math.Round((double)report.Marks.Value / report.MaxMarks.Value * 100, 1)
+                                    : (double?)null;
+
+                                string scoreBadge = pct >= 80 ? "bg-success" : pct >= 60 ? "bg-info text-dark" : pct >= 40 ? "bg-warning text-dark" : pct.HasValue ? "bg-danger" : "bg-secondary";
+
+                                <tr>
+                                    <td class="ps-4 fw-bold text-muted small">@report.Id</td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">@(report.Intern?.Name ?? "–")</div>
+                                        <div class="small text-muted">@(report.Intern?.Email)</div>
+                                    </td>
+                                    <td>
+                                        @if (report.Task != null)
+                                        {
+                                            <div class="fw-semibold text-dark small">@report.Task.Title</div>
+                                            <span class="badge @(report.Task.Status == "Completed" ? "bg-success" : report.Task.Status == "Submitted" ? "bg-warning text-dark" : "bg-secondary") small">
+                                                @report.Task.Status
+                                            </span>
+                                        }
+                                        else if (!string.IsNullOrEmpty(report.AssignmentReference))
+                                        {
+                                            <div class="small text-muted fst-italic">@report.AssignmentReference</div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">–</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(report.Topic))
+                                        {
+                                            <span class="badge bg-info text-dark">@report.Topic</span>
+                                        }
+                                        else { <span class="text-muted">–</span> }
+                                    </td>
+                                    <td class="fw-bold">
+                                        @if (report.Marks.HasValue)
+                                        {
+                                            <span>@report.Marks / @report.MaxMarks</span>
+                                        }
+                                        else { <span class="text-muted">–</span> }
+                                    </td>
+                                    <td>
+                                        @if (pct.HasValue)
+                                        {
+                                            <span class="badge @scoreBadge px-2">@pct%</span>
+                                        }
+                                        else { <span class="text-muted">–</span> }
+                                    </td>
+                                    <td class="small text-muted">@report.Date.ToString("MMM dd, yyyy")</td>
+                                    <td class="small text-truncate" style="max-width:220px;" title="@report.Notes">
+                                        @(string.IsNullOrWhiteSpace(report.Notes) ? "–" : report.Notes)
+                                    </td>
+                                    @if (User.IsInRole("Admin") || User.IsInRole("HR") || User.IsInRole("Mentor"))
+                                    {
+                                        <td class="text-end pe-4">
+                                            <div class="d-flex justify-content-end gap-1">
+                                                <a asp-action="Edit" asp-route-id="@report.Id"
+                                                   class="btn btn-sm btn-outline-warning" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@report.Id"
+                                                   class="btn btn-sm btn-outline-danger" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-5">
+                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                                    No progress reports found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const successAlert = document.getElementById("successAlert");
+            if (successAlert) {
+                setTimeout(() => bootstrap.Alert.getOrCreateInstance(successAlert).close(), 3000);
+            }
+        });
+    </script>
+}

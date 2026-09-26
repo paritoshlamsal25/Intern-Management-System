@@ -1,15 +1,22 @@
 using IMS.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace IMS.Web.Controllers
 {
+    [AllowAnonymous] // Public access for landing, privacy, and error pages
     public class HomeController : Controller
     {
         public IActionResult Index()
         {
-            return View();
+            if (User?.Identity?.IsAuthenticated ?? false)
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+
+            return RedirectToAction("Login", "Account");
         }
 
         public IActionResult Privacy()

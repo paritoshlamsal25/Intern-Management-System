@@ -1,83 +1,86 @@
 ﻿@model IMS.Web.Models.Intern
 
+@{
+    ViewData["Title"] = "Edit Intern";
+}
+
 <div class="container mt-5">
-
-    <div class="card shadow">
-
-        <div class="card-header bg-warning">
-            <h3>Edit Intern</h3>
+    <div class="card shadow border-0">
+        <div class="card-header bg-warning text-dark">
+            <h3 class="mb-0">Edit Intern</h3>
         </div>
 
         <div class="card-body">
-
-            <form method="post">
-
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
                 <input asp-for="Id" type="hidden" />
 
-                <div class="mb-3">
-                    <label asp-for="Name" class="form-label"></label>
-                    <input asp-for="Name" class="form-control" />
-                    <span asp-validation-for="Name" class="text-danger"></span>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                @* Basic Profile Info *@
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Name" class="form-label fw-bold"></label>
+                        <input asp-for="Name" class="form-control" placeholder="Enter full name..." />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Email" class="form-label fw-bold"></label>
+                        <input asp-for="Email" type="email" class="form-control" placeholder="Enter email address..." />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="Email" class="form-label"></label>
-                    <input asp-for="Email" class="form-control" />
-                    <span asp-validation-for="Email" class="text-danger"></span>
-                </div>
-                <div class="mb-3">
+                @* Department and Mentor Assignment *@
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="DepartmentId" class="form-label fw-bold">Department</label>
+                        <select asp-for="DepartmentId" class="form-select">
+                            <option value="">-- Select Department --</option>
+                            @if (ViewBag.Departments != null)
+                            {
+                                @foreach (var department in ViewBag.Departments)
+                                {
+                                    <option value="@department.Id">@department.Name</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                    </div>
 
-                    <label class="form-label">Department</label>
-
-                    <select asp-for="DepartmentId" class="form-select">
-
-                        <option value="">-- Select Department --</option>
-
-                        @foreach (var department in ViewBag.Departments)
-                        {
-                            <option value="@department.Id">
-                                @department.Name
-                            </option>
-                        }
-
-                    </select>
-
-                    <span asp-validation-for="DepartmentId" class="text-danger"></span>
-
-                </div>
-                <div class="mb-3">
-
-                    <label class="form-label">Mentor</label>
-
-                    <select asp-for="MentorId" class="form-select">
-
-                        <option value="">-- Select Mentor --</option>
-
-                        @foreach (var mentor in ViewBag.Mentors)
-                        {
-                            <option value="@mentor.Id">
-                                @mentor.FullName
-                            </option>
-                        }
-
-                    </select>
-
-                    <span asp-validation-for="MentorId" class="text-danger"></span>
-
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="MentorId" class="form-label fw-bold">Mentor</label>
+                        <select asp-for="MentorId" class="form-select">
+                            <option value="">-- Select Mentor --</option>
+                            @if (ViewBag.Mentors != null)
+                            {
+                                @foreach (var mentor in ViewBag.Mentors)
+                                {
+                                    <option value="@mentor.Id">@mentor.FullName</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="MentorId" class="text-danger"></span>
+                    </div>
                 </div>
 
-                <button class="btn btn-warning">
-                    Update
-                </button>
-
-                <a asp-action="Index" class="btn btn-secondary">
-                    Back
-                </a>
-
+                @* Action Buttons *@
+                <div class="d-flex gap-2 mt-3">
+                    <button type="submit" class="btn btn-warning text-dark shadow-sm">
+                        <i class="bi bi-save me-1"></i> Update Intern
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary shadow-sm">
+                        <i class="bi bi-arrow-left me-1"></i> Back to List
+                    </a>
+                </div>
             </form>
-
         </div>
-
     </div>
-
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

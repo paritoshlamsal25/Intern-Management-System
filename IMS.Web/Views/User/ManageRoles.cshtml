@@ -1,0 +1,47 @@
+@model IEnumerable<IMS.Web.Models.User>
+@{
+    ViewData["Title"] = "Manage Roles";
+}
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="mb-3">Manage User Roles</h5>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in Model)
+                    {
+                        <tr>
+                            <td>@u.Id</td>
+                            <td>@u.FullName</td>
+                            <td>@u.Email</td>
+                            <td>@u.Role</td>
+                            <td>
+                                <form asp-action="ChangeRole" method="post" class="d-flex gap-2">
+                                    <input type="hidden" name="id" value="@u.Id" />
+                                    <select name="role" class="form-select form-select-sm">
+                                        <option selected>@u.Role</option>
+                                        <option>Admin</option>
+                                        <option>Intern</option>
+                                        <option>HR</option>
+                                    </select>
+                                    <button class="btn btn-sm btn-primary">Save</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

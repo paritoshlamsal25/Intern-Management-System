@@ -1,138 +1,210 @@
-﻿using IMS.Web.Data;
+using IMS.Web.Data;
 using IMS.Web.Models;
+using IMS.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace IMS.Web.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "AdminOnly")] // Strictly locked to Admins
     public class UserController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IPasswordHasherService _hasher;
 
-        public UserController(ApplicationDbContext context)
+        public UserController(ApplicationDbContext context, IPasswordHasherService hasher)
         {
             _context = context;
+            _hasher = hasher;
         }
 
-        public IActionResult Index(string search)
+        private static List<string> GetAvailableRoles() => new() { "Admin", "HR", "Mentor", "Intern" };
+
+        // GET: Users List
+        [HttpGet]
+        public async Task<IActionResult> Index(string search)
         {
-            var users = _context.Users.AsQueryable();
+            var usersQuery = _context.Users.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
-                users = users.Where(x =>
-                    x.FullName.Contains(search) ||
-                    x.Email.Contains(search) ||
-                    x.Role.Contains(search));
+                usersQuery = usersQuery.Where(x =>
+                    (x.FullName != null && x.FullName.Contains(search)) ||
+                    (x.Email != null && x.Email.Contains(search)) ||
+                    (x.Role != null && x.Role.Contains(search)));
             }
+
             ViewBag.Search = search;
 
-            return View(users.ToList());
+            var result = await usersQuery.ToListAsync();
+            return View(result);
         }
+
+        // GET: Create User
+        [HttpGet]
         public IActionResult Create()
         {
-            ViewBag.Roles = new List<string>
-    {
-        "Admin",
-        "HR"
-    };
-
+            ViewBag.Roles = GetAvailableRoles();
             return View();
         }
+
+        // POST: Create User
         [HttpPost]
-        public IActionResult Create(User user)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(User user)
         {
             if (ModelState.IsValid)
             {
-                bool emailExists = _context.Users.Any(x => x.Email == user.Email);
+                bool emailExists = await _context.Users.AnyAsync(x => x.Email == user.Email);
 
                 if (emailExists)
                 {
                     ModelState.AddModelError("Email", "Email already exists.");
-
-                    ViewBag.Roles = new List<string>
-            {
-                "Admin",
-                "HR"
-            };
-
+                    ViewBag.Roles = GetAvailableRoles();
                     return View(user);
+                }
+
+                // Hash password
+                if (_hasher != null && !string.IsNullOrEmpty(user.Password))
+                {
+                    user.Password = _hasher.HashPassword(user, user.Password);
                 }
 
                 _context.Users.Add(user);
-                _context.SaveChanges();
 
-                TempData["Success"] = "User created successfully.";
-
-                return RedirectToAction("Index");
-            }
-
-            ViewBag.Roles = new List<string>
-    {
-        "Admin",
-        "HR"
-    };
-
-            return View(user);
-        }
-        public IActionResult Edit(int id)
-        {
-            var user = _context.Users.Find(id);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            ViewBag.Roles = new List<string>
-    {
-        "Admin",
-        "HR"
-    };
-
-            return View(user);
-        }
-        [HttpPost]
-        public IActionResult Edit(User user)
-        {
-            if (ModelState.IsValid)
-            {
-                bool emailExists = _context.Users.Any(x => x.Email == user.Email && x.Id != user.Id);
-
-                if (emailExists)
+                // If created as Intern, auto-create Intern record if missing
+                if (user.Role == "Intern")
                 {
-                    ModelState.AddModelError("Email", "Email already exists.");
-
-                    ViewBag.Roles = new List<string>
-            {
-                "Admin",
-                "HR"
-            };
-
-                    return View(user);
+                    bool internExists = await _context.Interns.AnyAsync(i => i.Email == user.Email);
+                    if (!internExists)
+                    {
+                        _context.Interns.Add(new Intern
+                        {
+                            Name = user.FullName,
+                            Email = user.Email
+                        });
+                    }
                 }
 
-                _context.Users.Update(user);
-                _context.SaveChanges();
+                // If created as Mentor, auto-create Mentor record if missing
+                if (user.Role == "Mentor")
+                {
+                    bool mentorExists = await _context.Mentors.AnyAsync(m => m.Email == user.Email);
+                    if (!mentorExists)
+                    {
+                        _context.Mentors.Add(new Mentor
+                        {
+                            FullName = user.FullName,
+                            Email = user.Email,
+                            Status = "Active"
+                        });
+                    }
+                }
 
-                TempData["Success"] = "User updated successfully.";
+                await _context.SaveChangesAsync();
 
-                return RedirectToAction("Index");
+                TempData["Success"] = "User created successfully.";
+                return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.Roles = new List<string>
-    {
-        "Admin",
-        "HR"
-    };
-
+            ViewBag.Roles = GetAvailableRoles();
             return View(user);
         }
-        public IActionResult Delete(int id)
+
+        // GET: Manage Roles
+        [HttpGet]
+        public async Task<IActionResult> ManageRoles()
         {
-            var user = _context.Users.Find(id);
+            var users = await _context.Users.ToListAsync();
+            return View(users);
+        }
+
+        // POST: Change Role
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeRole(int id, string role)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound();
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Prevent self-demotion of currently logged in admin
+            if (user.Id.ToString() == currentUserId && role != "Admin")
+            {
+                TempData["Error"] = "You cannot remove the Admin role from your own active account.";
+                return RedirectToAction(nameof(ManageRoles));
+            }
+
+            user.Role = role;
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Role for {user.FullName} updated to {role}.";
+            return RedirectToAction(nameof(ManageRoles));
+        }
+
+        // GET: Edit User
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.Roles = GetAvailableRoles();
+            return View(user);
+        }
+
+        // POST: Edit User
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(User user, string? NewPassword)
+        {
+            var existingUser = await _context.Users.FindAsync(user.Id);
+
+            if (existingUser == null)
+            {
+                return NotFound();
+            }
+
+            bool emailExists = await _context.Users.AnyAsync(x => x.Email == user.Email && x.Id != user.Id);
+
+            if (emailExists)
+            {
+                ModelState.AddModelError("Email", "Email already exists.");
+                ViewBag.Roles = GetAvailableRoles();
+                return View(user);
+            }
+
+            existingUser.FullName = user.FullName;
+            existingUser.Email = user.Email;
+            existingUser.Role = user.Role;
+
+            // Only update/rehash password if a new raw password was supplied
+            if (!string.IsNullOrWhiteSpace(NewPassword))
+            {
+                existingUser.Password = _hasher != null
+                    ? _hasher.HashPassword(existingUser, NewPassword)
+                    : NewPassword;
+            }
+
+            _context.Users.Update(existingUser);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "User updated successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Delete User Confirmation
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
 
             if (user == null)
             {
@@ -141,22 +213,43 @@ namespace IMS.Web.Controllers
 
             return View(user);
         }
+
+        // POST: Delete User
         [HttpPost, ActionName("Delete")]
-        public IActionResult DeleteConfirmed(int id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var user = _context.Users.Find(id);
+            var user = await _context.Users.FindAsync(id);
 
             if (user == null)
             {
                 return NotFound();
+            }
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Prevent self-deletion
+            if (user.Id.ToString() == currentUserId)
+            {
+                TempData["Error"] = "You cannot delete your own active account.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Also clean up associated Intern profile if applicable
+            if (user.Role == "Intern")
+            {
+                var intern = await _context.Interns.FirstOrDefaultAsync(i => i.Email == user.Email);
+                if (intern != null)
+                {
+                    _context.Interns.Remove(intern);
+                }
             }
 
             _context.Users.Remove(user);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             TempData["Success"] = "User deleted successfully.";
-
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
     }
 }

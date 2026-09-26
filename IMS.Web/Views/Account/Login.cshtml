@@ -1,60 +1,106 @@
-﻿@model IMS.Web.Models.ViewModels.LoginViewModel
+@model IMS.Web.Models.ViewModels.LoginViewModel
 
-<div class="container mt-5">
+@{
+    ViewData["Title"] = "Sign In";
+    Layout = "_AuthLayout";
+}
 
-    <div class="row justify-content-center">
+<div class="login-full d-flex align-items-center justify-content-center min-vh-100 py-4">
+    <div class="login-box w-100" style="max-width: 440px;">
+        
+        <!-- Brand Header -->
+        <div class="text-center mb-3">
+            <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle shadow-sm p-3 mb-2" style="width: 64px; height: 64px;">
+                <i class="bi bi-mortarboard-fill fs-2"></i>
+            </div>
+            <h3 class="fw-bold text-dark mb-0">Intern Management System</h3>
+            <p class="text-muted small">Secure Role-Based Portal</p>
+        </div>
 
-        <div class="col-md-5">
+        <div class="card login-card shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-body p-4 p-sm-5">
+                
+                <h5 class="fw-bold text-dark mb-1 text-center">Sign In</h5>
+                <p class="text-muted small text-center mb-4">Enter your credentials to access your portal</p>
 
-            <div class="card shadow">
+                <form method="post" asp-controller="Account" asp-action="Login">
+                    @Html.AntiForgeryToken()
 
-                <div class="card-header bg-primary text-white">
-                    <h3>Login</h3>
-                </div>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small fw-semibold shadow-sm mb-3"></div>
 
-                <div class="card-body">
-
-                    <form method="post">
-
-                        <div class="mb-3">
-
-                            <label asp-for="Email"></label>
-
-                            <input asp-for="Email" class="form-control" />
-
-                            <span asp-validation-for="Email" class="text-danger"></span>
-
+                    <!-- Email Field -->
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label text-muted small fw-semibold">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            <input asp-for="Email" class="form-control border-start-0 ps-0" id="loginEmail" placeholder="name@example.com" autofocus autocomplete="username" />
                         </div>
+                        <span asp-validation-for="Email" class="text-danger small ms-1"></span>
+                    </div>
 
-                        <div class="mb-3">
-
-                            <label asp-for="Password"></label>
-
-                            <input asp-for="Password" class="form-control" />
-
-                            <span asp-validation-for="Password" class="text-danger"></span>
-
+                    <!-- Password Field -->
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label text-muted small fw-semibold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted">
+                                <i class="bi bi-key"></i>
+                            </span>
+                            <input asp-for="Password" type="password" class="form-control border-start-0 border-end-0 ps-0" id="loginPassword" autocomplete="current-password" placeholder="Enter your password" />
+                            <button type="button" class="btn btn-outline-secondary border-start-0" id="pwdToggle" title="Toggle password visibility">
+                                <i class="bi bi-eye-fill" id="pwdIcon"></i>
+                            </button>
                         </div>
+                        <span asp-validation-for="Password" class="text-danger small ms-1"></span>
+                    </div>
 
-                        <button class="btn btn-primary w-100">
-                            Login
-                        </button>
+                    <!-- Remember Me -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" asp-for="RememberMe" id="rememberMe" />
+                            <label class="form-check-label text-secondary small" for="rememberMe">Remember me</label>
+                        </div>
+                    </div>
 
-                    </form>
-
-                </div>
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm rounded-3">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Sign In to Portal
+                    </button>
+                </form>
 
             </div>
-
+            <div class="card-footer bg-light border-0 py-3 text-center">
+                <span class="small text-muted">
+                    <i class="bi bi-shield-lock me-1"></i> Enterprise Intern Management Portal &copy; @DateTime.Now.Year
+                </span>
+            </div>
         </div>
 
     </div>
-
 </div>
 
 @section Scripts
 {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var btn = document.getElementById('pwdToggle');
+            var input = document.getElementById('loginPassword');
+            var icon = document.getElementById('pwdIcon');
+
+            if (!btn || !input) return;
+
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.className = 'bi bi-eye-slash-fill';
+                } else {
+                    input.type = 'password';
+                    icon.className = 'bi bi-eye-fill';
+                }
+            });
+        })();
+    </script>
 }

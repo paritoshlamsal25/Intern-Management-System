@@ -1,0 +1,66 @@
+@model IMS.Web.Models.ProgressReport
+
+@{
+    ViewData["Title"] = "Delete Progress Report";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-danger text-white py-3 border-0 rounded-top-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Progress Report #@Model.Id
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted mb-4">Are you sure you want to permanently delete this progress report? This action cannot be undone.</p>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered table-sm">
+                            <tr>
+                                <th class="text-muted" style="width:35%">Intern</th>
+                                <td><strong>@(Model.Intern?.Name ?? "–")</strong><br /><small class="text-muted">@Model.Intern?.Email</small></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Task</th>
+                                <td>@(Model.Task?.Title ?? Model.AssignmentReference ?? "–")</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Topic</th>
+                                <td>@(string.IsNullOrEmpty(Model.Topic) ? "–" : Model.Topic)</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Marks</th>
+                                <td>
+                                    @if (Model.Marks.HasValue)
+                                    {
+                                        <strong>@Model.Marks / @Model.MaxMarks</strong>
+                                    }
+                                    else { <span>–</span> }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Date</th>
+                                <td>@Model.Date.ToString("MMM dd, yyyy")</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <form asp-action="Delete" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-danger fw-bold shadow-sm">
+                                <i class="bi bi-trash-fill me-1"></i> Yes, Delete
+                            </button>
+                        </form>
+                        <a asp-action="Index" class="btn btn-secondary shadow-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,54 +1,59 @@
 ﻿@model IMS.Web.Models.Mentor
 
+@{
+    ViewData["Title"] = "Edit Mentor";
+}
+
 <div class="container mt-5">
-
-    <div class="card shadow">
-
-        <div class="card-header bg-primary text-white">
-            <h3>Edit Mentor</h3>
+    <div class="card shadow border-0">
+        <div class="card-header bg-warning text-dark">
+            <h3 class="mb-0">Edit Mentor</h3>
         </div>
 
         <div class="card-body">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <input asp-for="Id" type="hidden" />
 
-            <form method="post">
-                <input asp-for="Id" type="hidden"/>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
+                @* Full Name *@
                 <div class="mb-3">
-                    <label asp-for="FullName" class="form-label"></label>
-                    <input asp-for="FullName" class="form-control" />
+                    <label asp-for="FullName" class="form-label fw-bold"></label>
+                    <input asp-for="FullName" class="form-control" placeholder="Enter full name..." />
                     <span asp-validation-for="FullName" class="text-danger"></span>
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="Email" class="form-label"></label>
-                    <input asp-for="Email" class="form-control" />
-                    <span asp-validation-for="Email" class="text-danger"></span>
+                @* Contact Information Row *@
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Email" class="form-label fw-bold"></label>
+                        <input asp-for="Email" type="email" class="form-control" placeholder="Enter email address..." />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="PhoneNumber" class="form-label fw-bold"></label>
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number..." />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="PhoneNumber" class="form-label"></label>
-                    <input asp-for="PhoneNumber" class="form-control" />
-                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                @* Action Buttons *@
+                <div class="d-flex gap-2 mt-3">
+                    <button type="submit" class="btn btn-warning text-dark shadow-sm">
+                        <i class="bi bi-save me-1"></i> Update Mentor
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary shadow-sm">
+                        <i class="bi bi-arrow-left me-1"></i> Back to List
+                    </a>
                 </div>
-
-                <button class="btn btn-success">
-                    Save
-                </button>
-
-                <a asp-action="Index" class="btn btn-secondary">
-                    Back
-                </a>
-
             </form>
-
         </div>
-
     </div>
-
 </div>
 
-@section Scripts
-{
+@section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }

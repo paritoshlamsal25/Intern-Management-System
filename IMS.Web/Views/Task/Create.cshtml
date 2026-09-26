@@ -1,119 +1,98 @@
-﻿@model IMS.Web.Models.TaskItem
+@model IMS.Web.Models.TaskItem
+
+@{
+    ViewData["Title"] = "Create New Task";
+    var internsList = ViewBag.Interns as IEnumerable<IMS.Web.Models.Intern> ?? new List<IMS.Web.Models.Intern>();
+}
 
 <div class="container mt-5">
-
-    <div class="card shadow">
-
+    <div class="card shadow border-0">
         <div class="card-header bg-primary text-white">
-            <h3>Create New Task</h3>
+            <h3 class="mb-0">Create New Task</h3>
         </div>
 
         <div class="card-body">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
 
-            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
+                @* Title *@
                 <div class="mb-3">
-                    <label asp-for="Title" class="form-label"></label>
-
+                    <label asp-for="Title" class="form-label fw-bold"></label>
                     <input asp-for="Title"
                            class="form-control"
-                           placeholder="Enter task title" />
-
-                    <span asp-validation-for="Title"
-                          class="text-danger"></span>
+                           placeholder="e.g., Implement Authentication API & Unit Tests" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
                 </div>
 
+                @* Description *@
                 <div class="mb-3">
-                    <label asp-for="Description"
-                           class="form-label"></label>
-
+                    <label asp-for="Description" class="form-label fw-bold"></label>
                     <textarea asp-for="Description"
                               class="form-control"
                               rows="4"
-                              placeholder="Enter task description"></textarea>
-
-                    <span asp-validation-for="Description"
-                          class="text-danger"></span>
+                              placeholder="Detail the task objectives, requirements, and acceptance criteria..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="DueDate"
-                           class="form-label"></label>
-
-                    <input asp-for="DueDate"
-                           type="date"
-                           class="form-control" />
-
-                    <span asp-validation-for="DueDate"
-                          class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-
-                    <label asp-for="Status"
-                           class="form-label"></label>
-
-                    <select asp-for="Status"
-                            class="form-select">
-
-                        <option value="Pending">Pending</option>
-                        <option value="Completed">Completed</option>
-
-                    </select>
-
-                    <span asp-validation-for="Status"
-                          class="text-danger"></span>
-
-                </div>
-
-                <div class="mb-3">
-
-                    <label asp-for="InternId"
-                           class="form-label">
-                        Assign Intern
+                @* Assignment File Upload (PDF / Document) *@
+                <div class="mb-4">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-file-earmark-pdf text-danger me-1"></i> Assignment Attachment / PDF Instructions (Optional)
                     </label>
-
-                    <select asp-for="InternId"
-                            class="form-select">
-
-                        <option value="">
-                            -- Select Intern --
-                        </option>
-
-                        @foreach (var intern in ViewBag.Interns)
-                        {
-                            <option value="@intern.Id">
-                                @intern.Name
-                            </option>
-                        }
-
-                    </select>
-
-                    <span asp-validation-for="InternId"
-                          class="text-danger"></span>
-
+                    <input type="file" name="attachmentFile" class="form-control" accept=".pdf,.doc,.docx,.zip,.png,.jpg,.jpeg" />
+                    <small class="text-muted">Upload a PDF specification sheet, diagram, or instructions document for the intern.</small>
                 </div>
 
-                <button type="submit"
-                        class="btn btn-success">
-                    Save
-                </button>
+                @* Row for Due Date, Status, and Intern Assignment *@
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="DueDate" class="form-label fw-bold"></label>
+                        <input asp-for="DueDate"
+                               type="date"
+                               class="form-control" />
+                        <span asp-validation-for="DueDate" class="text-danger"></span>
+                    </div>
 
-                <a asp-action="Index"
-                   class="btn btn-secondary">
-                    Back
-                </a>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Status" class="form-label fw-bold"></label>
+                        <select asp-for="Status" class="form-select">
+                            <option value="Pending">Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
 
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="InternId" class="form-label fw-bold">Assign Intern</label>
+                        <select asp-for="InternId" class="form-select">
+                            <option value="">-- Select Intern --</option>
+                            @foreach (var intern in internsList)
+                            {
+                                <option value="@intern.Id">@intern.Name (@(intern.Department?.Name ?? "General"))</option>
+                            }
+                        </select>
+                        <span asp-validation-for="InternId" class="text-danger"></span>
+                    </div>
+                </div>
+
+                @* Action Buttons *@
+                <div class="d-flex gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary shadow-sm px-4 fw-bold">
+                        <i class="bi bi-check-circle-fill me-1"></i> Assign Task
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary shadow-sm">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Tasks
+                    </a>
+                </div>
             </form>
-
         </div>
-
     </div>
-
 </div>
 
-@section Scripts
-{
+@section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }

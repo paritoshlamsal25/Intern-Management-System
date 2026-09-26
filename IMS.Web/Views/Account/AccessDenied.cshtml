@@ -1,17 +1,36 @@
-﻿<div class="container mt-5">
+﻿@{
+    ViewData["Title"] = "Access Denied";
+    var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
+}
 
-    <div class="alert alert-danger">
+<div class="container d-flex align-items-center justify-content-center min-vh-75 py-5">
+    <div class="card shadow-lg border-0 rounded-3 w-100" style="max-width: 520px;">
+        <div class="card-body p-4 p-sm-5 text-center">
 
-        <h3>Access Denied</h3>
+            <div class="text-danger mb-3">
+                <i class="bi bi-shield-lock-fill display-1"></i>
+            </div>
 
-        <p>You don't have permission to access this page.</p>
+            <h2 class="fw-bold text-dark mb-2">403 - Access Denied</h2>
+            <p class="text-muted mb-4">
+                You do not have the required permissions or role privileges to access this resource.
+            </p>
 
-        <a asp-controller="Account"
-           asp-action="Login"
-           class="btn btn-primary">
-            Go to Login
-        </a>
+            <div class="d-flex justify-content-center gap-2">
+                @if (isAuthenticated)
+                {
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                        <i class="bi bi-house-door-fill me-1"></i> Return to Dashboard
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Go to Login
+                    </a>
+                }
+            </div>
 
+        </div>
     </div>
-
 </div>
